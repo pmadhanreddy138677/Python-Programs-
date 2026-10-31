@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    <a class="back-link" href="{% url 'mode_page' %}" style="margin:0;">{% t "menu_back" %}</a>
+    <div class="mode-title">{% t "game_mode_title" %}</div>
+    <span class="score-badge">{% t "score_prefix" %}: <span id="scoreVal">{{ score }}</span></span>
+  </div>
+
+  {% if not finished %}
+  <div class="game-progress-wrap">
+    <div class="game-progress-track">
+      <div class="game-progress-fill" style="width:{{ progress_pct }}%;"></div>
+    </div>
+    <div class="game-progress-labels">
+      <span>Task {{ task_number }} of {{ task_total }}</span>
+      {% if streak >= 2 %}<span class="streak-badge">🔥 {{ streak }} in a row</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="panel game-body {% if answered %}{% if correct %}flash-good{% else %}flash-bad{% endif %}{% endif %}" id="gamePanel">
+    {% if finished %}
+      <div class="finish-wrap" id="finishWrap">
+        <div class="trophy-burst">🏆</div>
+        <h2 style="text-align:center;">{% t "game_over" %}</h2>
+        <div class="final-score" style="text-align:center;">{{ score_line }}</div>
+        {% if best_streak >= 3 %}
+          <p style="text-align:center;color:var(--teal);font-family:var(--mono);font-size:.86rem;">Best streak: 🔥 {{ best_streak }}</p>
+        {% endif %}
+        <p style="text-align:center;color:var(--muted);">{{ final_msg }}</p>
+        <div class="final-actions">
+          <a class="btn btn-primary" href="{% url 'game_page' %}?restart=1">{% t "play_again_btn" %}</a>
+          <a class="btn btn-outline" href="{% url 'mode_page' %}">{% t "main_menu_btn" %}</a>
+        </div>
+      </div>
+
+    {% elif answered %}
+      <div class="feedback-wrap">
+        <div class="feedback-icon">{% if correct %}✅{% else %}✦{% endif %}</div>
+        <p class="feedback {% if correct %}good{% else %}bad{% endif %}" style="font-size:1.02rem;">{{ feedback }}</p>
+      </div>
+      <div style="text-align:center;margin-top:22px;">
+        <a class="btn btn-primary" href="{{ next_url }}" id="continueBtn">{% t "continue_btn" %}</a>
+      </div>
+
+    {% elif task == 'task1' %}
+      <div class="task-title">{% t "task1_title" %}</div>
+      <p>{% t "task1_q" %}</p>
+      <form method="post" action="{% url 'game_answer' %}">
+        {% csrf_token %}
+        <div class="quiz-opts" style="margin-top:16px;">
+          {% for opt in options %}
+            <button class="quiz-opt game-opt" name="choice" value="{{ opt.value }}">{{ opt.label }}</button>
+          {% endfor %}
+        </div>
+      </form>
+
+    {% elif task == 'task2a' or task == 'task2b' or task == 'task2c' %}
+      <div class="task-title">{% t "task2_title" %}</div>
+      <p>{% t "vending_q_template" desc=vending_desc %}</p>
+      <form method="post" action="{% url 'game_answer' %}">
+        {% csrf_token %}
+        <div class="game-inline">
+          {% for opt in options %}
+            <button class="btn btn-outline game-opt" name="guess" value="{{ opt.value }}">{{ opt.label }}</button>
+          {% endfor %}
+        </div>
+      </form>
+
+    {% elif task == 'task3' %}
+      <div class="task-title">{% t "task3_title" %}</div>
+      <p>{% t "task3_desc" %}</p>
+      <form method="post" action="{% url 'game_answer' %}">
+        {% csrf_token %}
+        <div class="game-inline">
+          <span style="color:var(--muted);">{% t "task3_input_label" %}</span>
+          <input type="text" name="value" placeholder="e.g. 7" required autofocus>
+          <button class="btn btn-primary" type="submit">{% t "run_btn" %}</button>
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+(function(){
+  var finished = {{ finished|yesno:"true,false" }};
+  var scoreNow = {{ score|default:0 }};
+  var totalTasks = {{ task_total|default:5 }};
+  if(finished && scoreNow >= totalTasks * 10){
+    launchConfetti();
+  }
+
+  function launchConfetti(){
+    var colors = ['#d946ef', '#6366f1', '#38bdf8', '#fbbf24'];
+    var container = document.createElement('div');
+    container.className = 'confetti-layer';
+    document.body.appendChild(container);
+    for(var i = 0; i < 60; i++){
+      var piece = document.createElement('span');
+      piece.className = 'confetti-piece';
+      piece.style.left = (Math.random() * 100) + 'vw';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.animationDelay = (Math.random() * 0.6) + 's';
+      piece.style.animationDuration = (2.2 + Math.random() * 1.4) + 's';
+      piece.style.transform = 'rotate(' + Math.floor(Math.random()*360) + 'deg)';
+      container.appendChild(piece);
+    }
+    setTimeout(function(){ container.remove(); }, 4200);
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell" style="max-width:1080px;">
+  <div class="dash-hero">
+    <div>
+      <span class="eyebrow">Learn • Play • Master</span>
+      <h1>Welcome back, {{ profile.name }} 👋</h1>
+    </div>
+    <span class="level-chip">Level {{ level }} · {{ level_title }}</span>
+  </div>
+
+  <div class="panel">
+    <div class="xp-label"><span>{{ xp_into_level }} / {{ xp_needed }} XP to Level {{ level|add:1 }} ({{ next_level_title }})</span><span>{{ total_xp }} XP total</span></div>
+    <div class="xp-track"><div class="xp-fill" style="width:{{ xp_pct }}%;"></div></div>
+
+    <div class="stat-tiles">
+      <div class="stat-tile"><div class="num">🔥 {{ profile.streak }}</div><div class="label">Day streak</div></div>
+      <div class="stat-tile"><div class="num">{{ completed_count }}</div><div class="label">Completed challenges</div></div>
+      <div class="stat-tile"><div class="num">{% if accuracy is not None %}{{ accuracy }}%{% else %}—{% endif %}</div><div class="label">Accuracy</div></div>
+      <div class="stat-tile"><div class="num">{{ profile.streak_freeze_charges }}</div><div class="label">🧊 Streak freeze left</div></div>
+    </div>
+
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;margin-top:22px;">This week</h4>
+    <div class="streak-week">
+      {% for d in week_days %}
+        <div class="streak-day {% if d.done %}done{% endif %} {% if d.is_today %}today{% endif %}">{{ d.label }}{% if d.done %}<br>✓{% endif %}</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="dash-card">
+      <h4>Current mission</h4>
+      <div class="big-num gradient" style="font-size:1.15rem;">{{ profile.current_topic }}</div>
+      <div class="mini-actions">
+        {% if not profile.assessment_taken %}
+          <a class="btn btn-primary" href="{% url 'assessment_start' %}">Take Placement Assessment</a>
+        {% else %}
+          <a class="btn btn-primary" href="{% url 'practice_topics' %}">Continue Learning</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="dash-card">
+      <h4>📅 Daily challenge</h4>
+      {% if daily_done_today %}
+        <p style="color:var(--good);">✓ Completed today — come back tomorrow!</p>
+      {% else %}
+        <p style="color:var(--muted);font-size:.88rem;">A quick 3-question round. +30 XP and a streak day.</p>
+        <div class="mini-actions"><a class="btn btn-primary" href="{% url 'daily_challenge' %}">Start</a></div>
+      {% endif %}
+    </div>
+
+    <div class="dash-card">
+      <h4>🧠 Smart revision</h4>
+      {% if due_revision %}
+        <p style="font-size:.88rem;color:var(--muted);">{{ due_revision }} question{{ due_revision|pluralize }} due for review.</p>
+        <div class="mini-actions"><a class="btn btn-primary" href="{% url 'revision_mode' %}">Revise now</a></div>
+      {% else %}
+        <p style="font-size:.88rem;color:var(--muted);">Nothing due right now — nice work!</p>
+      {% endif %}
+    </div>
+
+    <div class="dash-card">
+      <h4>🤖 AI Analysis</h4>
+      <p style="font-size:.88rem;color:var(--muted);">Get a personalized read on your performance and what to do next.</p>
+      <div class="mini-actions"><a class="btn btn-outline" href="{% url 'ai_analysis_page' %}">View analysis</a></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:6px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Today's activities</h4>
+    <div class="card-grid" style="margin-top:14px;">
+      <div class="select-card"><div class="glyph">📘</div><h3>Practice a topic</h3><p>Short quizzes by topic, with hints and explanations.</p><a class="btn btn-primary" href="{% url 'practice_topics' %}">Open</a></div>
+      <div class="select-card"><div class="glyph">💻</div><h3>Coding Playground</h3><p>Write and run real Python, with friendly error help.</p><a class="btn btn-primary" href="{% url 'playground_page' %}">Open</a></div>
+      <div class="select-card"><div class="glyph">🛠️</div><h3>Build Something Real</h3><p>Small projects with a checklist and starter code.</p><a class="btn btn-primary" href="{% url 'projects_list' %}">Open</a></div>
+      <div class="select-card"><div class="glyph">🤝</div><h3>Friend Challenges</h3><p>Challenge a friend to the same quiz and compare scores.</p><a class="btn btn-primary" href="{% url 'friends_page' %}">Open</a></div>
+      <div class="select-card"><div class="glyph">🎮</div><h3>Game Mode</h3><p>The original quick 5-task concept battle.</p><a class="btn btn-primary" href="{% url 'game_page' %}?restart=1">Open</a></div>
+      <div class="select-card"><div class="glyph">📊</div><h3>Learning Analytics</h3><p>See your accuracy by topic and where to focus.</p><a class="btn btn-primary" href="{% url 'analytics_page' %}">Open</a></div>
+    </div>
+  </div>
+
+  {% if pending_assignments %}
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">📌 Assigned by your teacher</h4>
+    {% for a in pending_assignments %}
+      <div class="friend-card" style="margin-top:12px;">
+        <div>
+          <strong>{{ a.title }}</strong>
+          <div style="font-size:.8rem;color:var(--muted);">{% if a.topic %}{{ a.topic.name }} · {% endif %}{% if a.deadline %}Due {{ a.deadline }}{% endif %}</div>
+        </div>
+        <form method="post" action="{% url 'assignment_complete' a.id %}">{% csrf_token %}<button class="btn btn-outline" type="submit">Mark done</button></form>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if pending_challenges %}
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">🤝 Challenges waiting for you</h4>
+    {% for c in pending_challenges %}
+      <div class="friend-card" style="margin-top:12px;">
+        <div><strong>{{ c.created_by.profile.name|default:c.created_by.username }}</strong> challenged you{% if c.topic %} on {{ c.topic.name }}{% endif %}</div>
+        <a class="btn btn-primary" href="{% url 'friend_challenge_play' c.id %}">Play</a>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;margin-top:26px;">🏆 Badges</h4>
+  <div class="badge-row">
+    {% for b in badges %}
+      <div class="badge-chip {% if b.earned %}earned{% else %}locked{% endif %}">
+        <div class="icon">{% if b.earned %}{{ b.badge.icon }}{% else %}🔒{% endif %}</div>
+        <div>{% if b.earned %}{{ b.badge.name }}{% else %}???{% endif %}</div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

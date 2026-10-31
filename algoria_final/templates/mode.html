@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Ready to learn</span>
+  <h1 class="page-title">{% t "mode_page_heading" %}</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="card-grid">
+    <div class="select-card">
+      <div class="glyph">🎬</div>
+      <h3>{% t "card_anim_title" %}</h3>
+      <p>{% t "card_anim_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'animation_page' %}">{% t "start_btn" %}</a>
+    </div>
+    <div class="select-card">
+      <div class="glyph">📘</div>
+      <h3>{% t "card_theory_title" %}</h3>
+      <p>{% t "card_theory_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'theory_page' %}">{% t "start_btn" %}</a>
+    </div>
+    <div class="select-card">
+      <div class="glyph">🎮</div>
+      <h3>{% t "card_game_title" %}</h3>
+      <p>{% t "card_game_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'game_page' %}?restart=1">{% t "start_btn" %}</a>
+    </div>
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'level_page' %}">{% t "change_level" %}</a>
+  </div>
+</div>
+{% endblock %}

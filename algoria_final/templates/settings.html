@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Make it yours</span>
+  <h1 class="page-title" style="text-align:center;">⚙️ Settings</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel form-shell" style="max-width:480px;">
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="display_name">Display name</label>
+        <input type="text" id="display_name" name="display_name" value="{{ profile.display_name }}" placeholder="{{ request.user.username }}">
+      </div>
+
+      <div class="form-field">
+        <label for="theme_mode">Theme</label>
+        <select id="theme_mode" name="theme_mode">
+          <option value="dark" {% if profile.theme_mode == "dark" %}selected{% endif %}>🌙 Dark</option>
+          <option value="light" {% if profile.theme_mode == "light" %}selected{% endif %}>☀️ Light</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="font_size">Font size</label>
+        <select id="font_size" name="font_size">
+          <option value="small" {% if profile.font_size == "small" %}selected{% endif %}>Small</option>
+          <option value="medium" {% if profile.font_size == "medium" %}selected{% endif %}>Medium</option>
+          <option value="large" {% if profile.font_size == "large" %}selected{% endif %}>Large</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label for="density">Density</label>
+        <select id="density" name="density">
+          <option value="comfortable" {% if profile.density == "comfortable" %}selected{% endif %}>Comfortable</option>
+          <option value="compact" {% if profile.density == "compact" %}selected{% endif %}>Compact</option>
+        </select>
+      </div>
+
+      <div class="toggle-row">
+        <span>Reduce animations</span>
+        <input type="checkbox" name="reduce_motion" {% if profile.reduce_motion %}checked{% endif %}>
+      </div>
+
+      <button class="btn btn-primary" type="submit" style="width:100%;margin-top:20px;">Save settings</button>
+    </form>
+  </div>
+
+  <p style="text-align:center;color:var(--muted);font-size:.84rem;margin-top:16px;">
+    These preferences are saved to your account and also apply instantly via the 🎨 menu in the top bar.
+  </p>
+</div>
+{% endblock %}

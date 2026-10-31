@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Assessment complete</span>
+  <h1 class="page-title" style="text-align:center;">🎯 Your Personalized Path</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel" style="text-align:center;">
+    <div class="trophy-burst">🧠</div>
+    <p style="font-size:1.1rem;">You scored <strong>{{ attempt.score }} / {{ attempt.total }}</strong>.</p>
+    <p style="color:var(--muted);margin-top:8px;">+{{ result.xp_gained }} XP earned{% if result.leveled_up %} — and you leveled up to <strong>Level {{ result.new_level }}</strong>! 🎉{% endif %}</p>
+
+    {% if recommended_topic %}
+      <div class="dash-card" style="margin:26px auto 0;max-width:420px;text-align:left;">
+        <h4>Recommended starting topic</h4>
+        <div class="big-num gradient">{{ recommended_topic.icon }} {{ recommended_topic.name }}</div>
+        <p style="font-size:.86rem;color:var(--muted);margin-top:8px;">This is where you'll get the most value from practicing first.</p>
+      </div>
+    {% endif %}
+
+    {% if result.new_badges %}
+      <p style="margin-top:18px;color:#fbbf24;">⭐ New badge{{ result.new_badges|length|pluralize }} unlocked: {% for b in result.new_badges %}{{ b.icon }} {{ b.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+
+    <div class="final-actions">
+      <a class="btn btn-primary" href="{% url 'practice_topics' %}">Start Learning</a>
+      <a class="btn btn-outline" href="{% url 'dashboard' %}">Go to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

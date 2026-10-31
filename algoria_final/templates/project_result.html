@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <div class="panel" style="text-align:center;">
+    <div class="trophy-burst">🛠️</div>
+    <h2>{{ project.title }} — {% if already_done %}Updated{% else %}Complete{% endif %}!</h2>
+    {% if result %}
+      <p style="color:var(--teal);font-family:var(--mono);margin-top:8px;">+{{ result.xp_gained }} XP ⭐</p>
+      {% if result.streak_message %}<p style="margin-top:10px;color:var(--good);">{{ result.streak_message }}</p>{% endif %}
+      {% if result.leveled_up %}<p style="margin-top:10px;color:#fbbf24;">🎉 Level up! You're now Level {{ result.new_level }}.</p>{% endif %}
+      {% if result.new_badges %}
+        <p style="margin-top:10px;color:#fbbf24;">⭐ New badge{{ result.new_badges|length|pluralize }}: {% for b in result.new_badges %}{{ b.icon }} {{ b.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+      {% endif %}
+    {% else %}
+      <p style="color:var(--muted);margin-top:8px;">Your updated code has been saved. (XP for this project was already awarded earlier.)</p>
+    {% endif %}
+    <div class="final-actions">
+      <a class="btn btn-primary" href="{% url 'projects_list' %}">More projects</a>
+      <a class="btn btn-outline" href="{% url 'dashboard' %}">Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

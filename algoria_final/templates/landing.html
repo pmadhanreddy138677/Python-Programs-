@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-inner">
+  <span class="hero-badge"><img src="{% static 'learning/img/logo_dark_bg.png' %}" alt="Algoria"></span>
+  <span class="eyebrow" style="justify-content:center;">Where Curiosity Becomes Code</span>
+  <h1 style="margin-top:16px;">Master Python the way <span class="text-gradient">you actually learn</span></h1>
+  <p class="hero-sub">Animated lessons, hands-on theory &amp; practice, and game-based
+     challenges — in English, Hindi, Telugu, Gujarati or Marathi. No experience required.</p>
+  <div class="hero-actions">
+    {% if user.is_authenticated %}
+      <a class="btn btn-primary" href="{% url 'dashboard' %}">Go to Dashboard →</a>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'signup_page' %}">Create your profile →</a>
+      <a class="btn btn-outline" href="{% url 'learn_start' %}">Try as guest</a>
+    {% endif %}
+  </div>
+
+  <div class="hero-visual">
+    <div class="hero-orbit-badge badge-1">🐍 Python</div>
+    <div class="hero-orbit-badge badge-2">🔁 Loops</div>
+    <div class="hero-orbit-badge badge-3">{ } Functions</div>
+    <div class="hero-orbit-badge badge-4">📊 Data</div>
+
+    <div class="hero-mock">
+      <div class="hero-mock-bar">
+        <span class="hero-mock-dot" style="background:#f87171;"></span>
+        <span class="hero-mock-dot" style="background:#fbbf24;"></span>
+        <span class="hero-mock-dot" style="background:#4ade80;"></span>
+        <span class="hero-mock-filename">first_program.py</span>
+      </div>
+      <div class="hero-mock-body">
+<span class="ln"><span class="tok-kw">def</span> <span class="tok-fn">greet</span>(<span class="tok-var">name</span>):</span>
+<span class="ln">    <span class="tok-kw">return</span> <span class="tok-str">f"Hello, {name}!"</span></span>
+<span class="ln"></span>
+<span class="ln"><span class="tok-var">learner</span> = <span class="tok-str">"Algoria"</span></span>
+<span class="ln" id="typedLineWrap"><span id="typedLine"></span><span class="cursor"></span></span>
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<section class="section" id="mission">
+  <div class="section-head reveal">
+    <span class="eyebrow" style="justify-content:center;">Our Mission</span>
+    <h2>Learning Python should feel like curiosity, not homework</h2>
+    <p>At Algoria, our mission is to make Python learning simple, interactive, and enjoyable
+       for everyone. We guide complete beginners through animated step-by-step lessons,
+       clear theory notes, and fun game-based challenges — so every learner builds real
+       skills and real confidence, in a language they actually understand.</p>
+  </div>
+</section>
+
+<section class="section" id="features">
+  <div class="section-head reveal">
+    <span class="eyebrow" style="justify-content:center;">Why Algoria</span>
+    <h2>Three ways to learn, one set of ideas</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-icon">🎬</div>
+      <h3>Animation Mode</h3>
+      <p>Watch what a computer, a program, and an algorithm actually are — brought to
+         life step by step, ending in your first real line of Python.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="feature-icon">📘</div>
+      <h3>Theory &amp; Practice</h3>
+      <p>Clear, translated notes on computers, algorithms and the Input → Process →
+         Output model, followed by short practice questions.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <div class="feature-icon">🎮</div>
+      <h3>Game Mode</h3>
+      <p>Learn by doing — sort a vending machine into input/process/output, build a
+         mini program, and earn points along the way.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head reveal">
+    <span class="eyebrow" style="justify-content:center;">Built for beginners</span>
+    <h2>Learn in the language you think in</h2>
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-icon">🌐</div>
+      <h3>5 languages</h3>
+      <p>English, Hindi, Telugu, Gujarati and Marathi — every label, note, quiz and
+         game task is fully translated.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="feature-icon">🎚</div>
+      <h3>3 learning levels</h3>
+      <p>Beginner, Intermediate, and Advanced — with Intermediate/Advanced learners
+         telling us their goal so notes stay relevant.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <div class="feature-icon">🧩</div>
+      <h3>Code stays in Python</h3>
+      <p>Explanations are translated, but every code snippet stays in real Python —
+         so what you read is exactly what you'll type.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="section-divider">
+
+<section class="section" id="roadmap">
+  <div class="section-head reveal">
+    <span class="eyebrow" style="justify-content:center;">Curated Roadmap</span>
+    <h2>A structured path from basics to advanced</h2>
+    <p>We've meticulously designed a progression that takes you from foundational
+       logic to real-world skills — every step built on a solid foundation.</p>
+  </div>
+  <div class="roadmap-list">
+    <div class="roadmap-item reveal reveal-delay-1"><span class="roadmap-num">01</span>
+      <div><h4>Python Fundamentals</h4><p>Core syntax &amp; logic — the very first
+        steps this site teaches, in Animation, Theory and Game mode.</p>
+        <span class="roadmap-tag">Available now</span></div></div>
+    <div class="roadmap-item reveal reveal-delay-2"><span class="roadmap-num">02</span>
+      <div><h4>Advanced Data Structures</h4><p>Dictionaries, objects and
+        organizing data as your programs grow.</p>
+        <span class="roadmap-tag">Coming soon</span></div></div>
+    <div class="roadmap-item reveal reveal-delay-3"><span class="roadmap-num">03</span>
+      <div><h4>Web Development</h4><p>Flask &amp; Django — for learners whose
+        purpose is building for the web.</p>
+        <span class="roadmap-tag">Coming soon</span></div></div>
+    <div class="roadmap-item reveal reveal-delay-3"><span class="roadmap-num">04</span>
+      <div><h4>Data Science</h4><p>Pandas &amp; NumPy for working with real data.</p>
+        <span class="roadmap-tag">Coming soon</span></div></div>
+    <div class="roadmap-item reveal reveal-delay-3"><span class="roadmap-num">05</span>
+      <div><h4>Machine Learning</h4><p>Scikit-learn &amp; TensorFlow fundamentals.</p>
+        <span class="roadmap-tag">Coming soon</span></div></div>
+    <div class="roadmap-item reveal reveal-delay-3"><span class="roadmap-num">06</span>
+      <div><h4>Advanced Analytics</h4><p>Advanced data visualization and storytelling.</p>
+        <span class="roadmap-tag">Coming soon</span></div></div>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="section-head reveal">
+    <span class="eyebrow" style="justify-content:center;">Your Questions, Answered</span>
+    <h2>Frequently asked questions</h2>
+  </div>
+  <div style="max-width:720px;margin:0 auto;">
+    <div class="faq-item reveal"><h4>What are the prerequisites?</h4>
+      <p>None. No prior Python experience is required — Beginner level starts from
+         what a computer even is.</p></div>
+    <div class="faq-item reveal"><h4>Which languages are supported?</h4>
+      <p>English, Hindi (हिन्दी), Telugu (తెలుగు), Gujarati (ગુજરાતી) and
+         Marathi (मराठी). You can change your language at any time.</p></div>
+    <div class="faq-item reveal"><h4>What's the difference between the three modes?</h4>
+      <p>Animation Mode is a guided, step-by-step walkthrough. Theory &amp; Practice
+         gives you notes plus two quick questions. Game Mode is five scored mini
+         tasks worth 50 points total.</p></div>
+    <div class="faq-item reveal"><h4>Do I need to install anything?</h4>
+      <p>No — everything runs in the browser. A separate Tkinter desktop app exists
+         with the exact same lessons if you'd rather learn offline.</p></div>
+  </div>
+</section>
+
+<section class="section" style="padding-bottom:0;">
+  <div class="cta-band reveal">
+    <span class="eyebrow" style="justify-content:center;">Ready when you are</span>
+    <h2 style="margin-top:14px;">Start your coding journey today</h2>
+    <p style="color:var(--muted);margin-bottom:26px;">Pick a language, pick a level, and take your first steps into programming.</p>
+    {% if user.is_authenticated %}
+      <a class="btn btn-primary" href="{% url 'dashboard' %}">Go to Dashboard →</a>
+    {% else %}
+      <a class="btn btn-primary" href="{% url 'signup_page' %}">Get Started →</a>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+(function(){
+  const el = document.getElementById('typedLine');
+  const full = 'print(greet(learner))';
+  let i = 0;
+  function type(){
+    if(i <= full.length){
+      el.innerHTML = escapeTyped(full.slice(0, i));
+      i++;
+      setTimeout(type, 70);
+    } else {
+      setTimeout(() => {
+        const resultLine = document.createElement('span');
+        resultLine.className = 'ln';
+        resultLine.innerHTML = '<span class="line-good">&gt;&gt; Hello, Algoria!</span>';
+        document.getElementById('typedLineWrap').after(resultLine);
+      }, 400);
+    }
+  }
+  function escapeTyped(text){
+    return text
+      .replace('print', '<span class="tok-fn">print</span>')
+      .replace('greet', '<span class="tok-fn">greet</span>')
+      .replace('learner', '<span class="tok-var">learner</span>');
+  }
+  type();
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Friend Challenge</span>
+  <h1 class="page-title" style="text-align:center;">🤝 Head to Head</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel" style="text-align:center;">
+    {% if not challenge.creator_attempt or not challenge.opponent_attempt %}
+      <div class="trophy-burst">⏳</div>
+      <h2>Waiting on your opponent</h2>
+      <p style="color:var(--muted);margin-top:8px;">
+        {% if challenge.creator_attempt %}
+          You scored {{ challenge.creator_attempt.score }} / {{ challenge.creator_attempt.total }}.
+        {% else %}
+          {{ challenge.opponent.profile.name|default:challenge.opponent.username }} scored
+          {{ challenge.opponent_attempt.score }} / {{ challenge.opponent_attempt.total }}.
+        {% endif %}
+        We'll show the full result once both of you have played.
+      </p>
+    {% else %}
+      <div class="trophy-burst">
+        {% if winner == "tie" %}🤝{% elif winner == request.user %}🏆{% else %}💪{% endif %}
+      </div>
+      <h2>
+        {% if winner == "tie" %}It's a tie!
+        {% elif winner == request.user %}You won!
+        {% else %}{{ winner.profile.name|default:winner.username }} won this round
+        {% endif %}
+      </h2>
+
+      <div class="stat-tiles" style="max-width:420px;margin:20px auto 0;">
+        <div class="stat-tile">
+          <div class="num">{{ challenge.created_by.profile.name|default:challenge.created_by.username }}</div>
+          <div class="label">{{ challenge.creator_attempt.score }} / {{ challenge.creator_attempt.total }}</div>
+        </div>
+        <div class="stat-tile">
+          <div class="num">{{ challenge.opponent.profile.name|default:challenge.opponent.username }}</div>
+          <div class="label">{{ challenge.opponent_attempt.score }} / {{ challenge.opponent_attempt.total }}</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="final-actions">
+      <a class="btn btn-primary" href="{% url 'friends_page' %}">Back to Friends</a>
+      <a class="btn btn-outline" href="{% url 'dashboard' %}">Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

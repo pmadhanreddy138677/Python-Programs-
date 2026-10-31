@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Friend Challenges</span>
+  <h1 class="page-title" style="text-align:center;">🤝 Friends</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel form-shell" style="max-width:480px;">
+    <h4 style="margin-bottom:12px;">Add a friend by username</h4>
+    <form method="post" action="{% url 'friend_add' %}" style="display:flex;gap:10px;">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="their username" required style="flex:1;padding:11px 13px;border-radius:10px;border:1px solid var(--border-strong);background:var(--bg-elevated);color:var(--text);">
+      <button class="btn btn-primary" type="submit">Send request</button>
+    </form>
+  </div>
+
+  {% if incoming %}
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Friend requests</h4>
+    {% for fr in incoming %}
+      <div class="friend-card">
+        <div>{{ fr.from_user.profile.name|default:fr.from_user.username }} wants to be friends</div>
+        <form method="post" action="{% url 'friend_accept' fr.id %}">{% csrf_token %}<button class="btn btn-outline" type="submit">Accept</button></form>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Your friends</h4>
+    {% if not friend_users %}
+      <p style="color:var(--muted);font-size:.9rem;margin-top:10px;">No friends yet — add someone above to send them a challenge.</p>
+    {% endif %}
+    {% for f in friend_users %}
+      <div class="friend-card">
+        <div><strong>{{ f.profile.name|default:f.username }}</strong> <span style="color:var(--muted);font-size:.82rem;">Level {{ f.profile.level }}</span></div>
+        <form method="post" action="{% url 'friend_challenge_create' f.id %}" style="display:flex;gap:8px;align-items:center;">
+          {% csrf_token %}
+          <select name="topic_id" style="padding:8px 10px;border-radius:8px;border:1px solid var(--border-strong);background:var(--bg-elevated);color:var(--text);font-size:.82rem;">
+            <option value="">Any topic</option>
+            {% for t in topics %}<option value="{{ t.id }}">{{ t.icon }} {{ t.name }}</option>{% endfor %}
+          </select>
+          <button class="btn btn-primary" type="submit" style="padding:9px 16px;font-size:.84rem;">Challenge</button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if sent_challenges or received_challenges %}
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Challenges</h4>
+    {% for c in received_challenges %}
+      <div class="challenge-card">
+        <div>{{ c.created_by.profile.name|default:c.created_by.username }} challenged you{% if c.topic %} on {{ c.topic.name }}{% endif %}
+          <span style="color:var(--muted);font-size:.8rem;"> · {{ c.get_status_display }}</span>
+        </div>
+        {% if c.status == "pending" and not c.opponent_attempt %}
+          <a class="btn btn-primary" href="{% url 'friend_challenge_play' c.id %}" style="padding:9px 16px;font-size:.84rem;">Play</a>
+        {% else %}
+          <a class="btn btn-outline" href="{% url 'friend_challenge_result' c.id %}" style="padding:9px 16px;font-size:.84rem;">View result</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+    {% for c in sent_challenges %}
+      <div class="challenge-card">
+        <div>You challenged {{ c.opponent.profile.name|default:c.opponent.username }}{% if c.topic %} on {{ c.topic.name }}{% endif %}
+          <span style="color:var(--muted);font-size:.8rem;"> · {{ c.get_status_display }}</span>
+        </div>
+        <a class="btn btn-outline" href="{% url 'friend_challenge_result' c.id %}" style="padding:9px 16px;font-size:.84rem;">View</a>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

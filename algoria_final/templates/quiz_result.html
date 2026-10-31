@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">
+    {% if daily %}Daily Challenge complete{% elif revision %}Revision round complete{% else %}Quiz complete{% endif %}
+  </span>
+  <h1 class="page-title" style="text-align:center;">
+    {% if topic %}{{ topic.icon }} {{ topic.name }}{% elif daily %}📅 Daily Challenge{% elif revision %}🧠 Smart Revision{% else %}Results{% endif %}
+  </h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel" style="text-align:center;">
+    <div class="trophy-burst">{% if result.attempt.score == result.attempt.total %}🏆{% else %}✅{% endif %}</div>
+    <p style="font-size:1.15rem;">You scored <strong>{{ result.attempt.score }} / {{ result.attempt.total }}</strong></p>
+    <p style="color:var(--teal);font-family:var(--mono);margin-top:6px;">+{{ result.xp_gained }} XP ⭐</p>
+
+    {% if result.streak_message %}
+      <p style="margin-top:14px;color:var(--good);">{{ result.streak_message }}</p>
+    {% endif %}
+    {% if result.leveled_up %}
+      <p style="margin-top:10px;color:#fbbf24;">🎉 Level up! You're now Level {{ result.new_level }}.</p>
+    {% endif %}
+    {% if result.new_badges %}
+      <p style="margin-top:10px;color:#fbbf24;">⭐ New badge{{ result.new_badges|length|pluralize }}: {% for b in result.new_badges %}{{ b.icon }} {{ b.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+    {% endif %}
+
+    <div class="final-actions">
+      {% if topic %}
+        <a class="btn btn-primary" href="{% url 'practice_quiz' topic.slug %}?restart=1">Play again</a>
+      {% endif %}
+      <a class="btn btn-outline" href="{{ back_url|default:'/dashboard/' }}">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

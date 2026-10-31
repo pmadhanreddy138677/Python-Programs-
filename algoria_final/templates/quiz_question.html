@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    {% if topic %}
+      <a class="back-link" href="{% url 'practice_topics' %}" style="margin:0;">← Topics</a>
+      <div class="mode-title">{{ topic.icon }} {{ topic.name }}</div>
+    {% elif daily %}
+      <a class="back-link" href="{% url 'dashboard' %}" style="margin:0;">← Dashboard</a>
+      <div class="mode-title">📅 Daily Challenge</div>
+    {% elif revision %}
+      <a class="back-link" href="{% url 'dashboard' %}" style="margin:0;">← Dashboard</a>
+      <div class="mode-title">🧠 Smart Revision</div>
+    {% elif friend_challenge %}
+      <a class="back-link" href="{% url 'friends_page' %}" style="margin:0;">← Friends</a>
+      <div class="mode-title">🤝 vs {{ friend_challenge.opponent.profile.name|default:friend_challenge.opponent.username }}</div>
+    {% else %}
+      <span></span><div class="mode-title">Quiz</div>
+    {% endif %}
+    <span class="score-badge">Q{{ step }} / {{ total }}</span>
+  </div>
+
+  <div class="game-progress-wrap">
+    <div class="game-progress-track"><div class="game-progress-fill" style="width:{{ step|floatformat:0 }}0%; width:calc(100% * {{ step }} / {{ total }});"></div></div>
+  </div>
+
+  <div class="panel game-body {% if answered %}{% if outcome.correct %}flash-good{% else %}flash-bad{% endif %}{% endif %}">
+    {% if answered %}
+      <div class="feedback-wrap">
+        <div class="feedback-icon">{% if outcome.correct %}✅{% else %}✦{% endif %}</div>
+        {% if outcome.correct %}
+          <p class="feedback good" style="font-size:1.05rem;">✓ CORRECT! +10 XP ⭐</p>
+        {% else %}
+          <p class="feedback bad" style="font-size:1.05rem;">✗ NOT QUITE</p>
+        {% endif %}
+        <p style="color:var(--muted);max-width:520px;"><strong style="color:var(--text);">Why?</strong> {{ outcome.explanation }}</p>
+      </div>
+      <div style="text-align:center;margin-top:22px;">
+        <a class="btn btn-primary" href="{{ next_url }}">Continue</a>
+      </div>
+    {% else %}
+      <div class="task-title">⚔ {% if topic %}{{ topic.name }}{% else %}Quick Question{% endif %}</div>
+      <p style="white-space:pre-line;">{{ question.text }}</p>
+      <form method="post" action="">
+        {% csrf_token %}
+        <div class="quiz-opts" style="margin-top:16px;">
+          {% for value, label in options %}
+            <button class="quiz-opt game-opt" name="choice" value="{{ value }}">{{ label }}</button>
+          {% endfor %}
+        </div>
+      </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

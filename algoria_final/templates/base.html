@@ -1,0 +1,666 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Algoria — Where Curiosity Becomes Code{% endblock %}</title>
+<meta name="description" content="Algoria — learn Python through animated lessons, theory notes and game-based practice, in five languages.">
+<link rel="icon" href="{% static 'learning/img/favicon.ico' %}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'learning/css/style.css' %}?v=4">
+<script>
+(function(){
+  try{
+    var saved = JSON.parse(localStorage.getItem('algoria_theme_colors'));
+    if(saved && saved.length === 3){
+      var root = document.documentElement.style;
+      function toRgba(hex, a){
+        var h = hex.replace('#','');
+        if(h.length === 3){ h = h.split('').map(function(c){return c+c;}).join(''); }
+        var n = parseInt(h, 16);
+        return 'rgba(' + [(n>>16)&255,(n>>8)&255,n&255].join(',') + ',' + a + ')';
+      }
+      root.setProperty('--green', saved[0]);
+      root.setProperty('--teal', saved[1]);
+      root.setProperty('--blue', saved[2]);
+      root.setProperty('--gradient-brand', 'linear-gradient(120deg, ' + saved[0] + ' 0%, ' + saved[1] + ' 48%, ' + saved[2] + ' 100%)');
+      root.setProperty('--gradient-brand-soft', 'linear-gradient(120deg, ' + toRgba(saved[0],0.16) + ' 0%, ' + toRgba(saved[1],0.14) + ' 48%, ' + toRgba(saved[2],0.16) + ' 100%)');
+      root.setProperty('--gradient-text', 'linear-gradient(100deg, ' + saved[0] + ' 0%, ' + saved[1] + ' 45%, ' + saved[2] + ' 100%)');
+    }
+  }catch(e){}
+  try{
+    var html = document.documentElement;
+    var a11y = JSON.parse(localStorage.getItem('algoria_a11y')) || {};
+    html.setAttribute('data-theme', a11y.theme || '{{ profile.theme_mode|default:"dark" }}' || 'dark');
+    html.setAttribute('data-font', a11y.font || '{{ profile.font_size|default:"medium" }}' || 'medium');
+    html.setAttribute('data-density', a11y.density || '{{ profile.density|default:"comfortable" }}' || 'comfortable');
+    if(a11y.motion || {{ profile.reduce_motion|yesno:"true,false" }}){ html.setAttribute('data-motion', 'reduced'); }
+  }catch(e){}
+})();
+</script>
+{% block extra_head %}{% endblock %}
+</head>
+<body class="{% if user.is_authenticated %}has-sidebar{% endif %}">
+
+<div class="page-transition" id="pageTransition" aria-hidden="true">
+  <img src="{% static 'learning/img/logo_mark_transparent.png' %}" alt="" class="page-transition-logo">
+</div>
+
+<header class="topbar">
+  <a class="brand" href="{% url 'landing' %}">
+    <img src="{% static 'learning/img/logo_mark_transparent.png' %}" alt="Algoria logo">
+    ALGORIA
+  </a>
+  <nav class="topnav">
+    <a href="{% url 'landing' %}#mission">Mission</a>
+    <a href="{% url 'landing' %}#features">Features</a>
+    <a href="{% url 'landing' %}#roadmap">Roadmap</a>
+    <a href="{% url 'landing' %}#faq">FAQ</a>
+  </nav>
+  <div class="topbar-right">
+    {% if lang %}
+      <a class="pill-link" href="{% url 'language_page' %}">🌐 {{ lang_label }}</a>
+    {% endif %}
+    {% if level %}
+      <a class="pill-link" href="{% url 'level_page' %}">🎚 {{ level|capfirst }}</a>
+    {% endif %}
+    <div style="position:relative;">
+      <button class="theme-toggle" id="themeToggleBtn" type="button" aria-label="Customize color theme" title="Customize color theme">🎨</button>
+      <div class="theme-panel" id="themePanel">
+        <h4>Color theme</h4>
+        <div class="theme-swatches" id="themeSwatches"></div>
+        <h4>Custom gradient</h4>
+        <div class="theme-custom-row"><label for="customColor1">Start</label><input type="color" id="customColor1" value="#d946ef"></div>
+        <div class="theme-custom-row"><label for="customColor2">Middle</label><input type="color" id="customColor2" value="#6366f1"></div>
+        <div class="theme-custom-row"><label for="customColor3">End</label><input type="color" id="customColor3" value="#38bdf8"></div>
+        <button class="theme-reset" id="themeResetBtn" type="button">Reset to default</button>
+
+        <h4 style="margin-top:16px;">Accessibility</h4>
+        <div class="toggle-row"><span>☀️ Light / 🌙 Dark</span>
+          <select id="a11yMode">
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+        <div class="toggle-row"><span>Font size</span>
+          <select id="a11yFont">
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+        <div class="toggle-row"><span>Density</span>
+          <select id="a11yDensity">
+            <option value="comfortable">Comfortable</option>
+            <option value="compact">Compact</option>
+          </select>
+        </div>
+        <div class="toggle-row"><span>Reduce animations</span>
+          <input type="checkbox" id="a11yMotion">
+        </div>
+      </div>
+    </div>
+    {% if user.is_authenticated %}
+      <a class="pill-link" href="{% url 'dashboard' %}">👤 {{ user.profile.name|default:user.username }}</a>
+      <a class="cta-small" href="{% url 'logout' %}" style="background: var(--bg-card); color: var(--text); border:1px solid var(--border-strong);">Log out</a>
+    {% else %}
+      <a href="{% url 'learn_start' %}" class="pill-link">Guest mode</a>
+      <a class="pill-link" href="{% url 'login_page' %}">Log in</a>
+      <a class="cta-small" href="{% url 'signup_page' %}">Sign up</a>
+    {% endif %}
+  </div>
+</header>
+
+{% if user.is_authenticated %}
+<nav class="app-sidebar" id="appSidebar">
+  <div class="sidebar-scroll-thumb" id="sidebarScrollThumb"></div>
+  <button type="button" class="app-sidebar-toggle" id="sidebarToggle" title="Expand menu">
+    <span class="nav-icon">»</span><span class="nav-label">Collapse</span>
+  </button>
+  <a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+    <span class="nav-icon">🏠</span><span class="nav-label">Dashboard</span>
+    <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Your home base — level, XP, streak and badges at a glance.</span></span></a>
+  {% if user.profile.is_teacher %}
+    <a href="{% url 'teacher_dashboard' %}" class="{% if request.resolver_match.url_name == 'teacher_dashboard' %}active{% endif %}">
+      <span class="nav-icon">🧑‍🏫</span><span class="nav-label">Teacher</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>See every student's progress and create assignments or challenges.</span></span></a>
+  {% else %}
+    <a href="{% url 'practice_topics' %}" class="{% if request.resolver_match.url_name == 'practice_topics' %}active{% endif %}">
+      <span class="nav-icon">📘</span><span class="nav-label">Practice</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Short 5-question quizzes by topic, with hints and explanations for every answer.</span></span></a>
+    <a href="{% url 'playground_page' %}" class="{% if request.resolver_match.url_name == 'playground_page' %}active{% endif %}">
+      <span class="nav-icon">💻</span><span class="nav-label">Playground</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Write and run real Python right in your browser — errors get a plain-English explanation.</span></span></a>
+    <a href="{% url 'daily_challenge' %}" class="{% if request.resolver_match.url_name == 'daily_challenge' %}active{% endif %}">
+      <span class="nav-icon">📅</span><span class="nav-label">Daily</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>One quick challenge a day keeps your streak alive.</span></span></a>
+    <a href="{% url 'revision_mode' %}" class="{% if request.resolver_match.url_name == 'revision_mode' %}active{% endif %}">
+      <span class="nav-icon">🧠</span><span class="nav-label">Revision</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Questions you missed before come back here for a quick recap, so they actually stick.</span></span></a>
+    <a href="{% url 'projects_list' %}" class="{% if request.resolver_match.url_name == 'projects_list' %}active{% endif %}">
+      <span class="nav-icon">🛠️</span><span class="nav-label">Projects</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Build small, real programs step by step, like a calculator or a number-guessing game.</span></span></a>
+    <a href="{% url 'friends_page' %}" class="{% if request.resolver_match.url_name == 'friends_page' %}active{% endif %}">
+      <span class="nav-icon">🤝</span><span class="nav-label">Friends</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Add a friend and challenge them to a head-to-head quiz.</span></span></a>
+    <a href="{% url 'analytics_page' %}" class="{% if request.resolver_match.url_name == 'analytics_page' %}active{% endif %}">
+      <span class="nav-icon">📊</span><span class="nav-label">Analytics</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>See your accuracy by topic and your recent activity.</span></span></a>
+    <a href="{% url 'ai_analysis_page' %}" class="{% if request.resolver_match.url_name == 'ai_analysis_page' %}active{% endif %}">
+      <span class="nav-icon">🤖</span><span class="nav-label">AI Analysis</span>
+      <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>A personalized read on your progress, and what to practice next.</span></span></a>
+  {% endif %}
+  <a href="{% url 'settings_page' %}" class="{% if request.resolver_match.url_name == 'settings_page' %}active{% endif %}">
+    <span class="nav-icon">⚙️</span><span class="nav-label">Settings</span>
+    <span class="sidebar-tip"><span class="sidebar-tip-icon">✨</span><span>Theme, font size, density and reduced-animation preferences.</span></span></a>
+  <div class="app-sidebar-spacer"></div>
+  <button type="button" class="guide-help-btn" id="guideHelpBtn" title="Meet Aria, your guardian guide">
+    <span class="nav-icon">✨</span><span class="nav-label">Ask Aria</span></button>
+</nav>
+{% include "_guide.html" %}
+{% endif %}
+
+<main>
+{% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img src="{% static 'learning/img/logo_mark_transparent.png' %}" alt="Algoria logo">
+      <strong>ALGORIA</strong>
+    </div>
+    <p class="footer-tag">Your friendly guide to Python programming — animated lessons,
+       theory notes and game-based practice, in five languages.</p>
+    <div class="footer-cols">
+      <div>
+        <h4>Learn</h4>
+        <a href="{% url 'language_page' %}">Choose language</a>
+        <a href="{% url 'level_page' %}">Choose level</a>
+        <a href="{% url 'mode_page' %}">Choose mode</a>
+      </div>
+      <div>
+        <h4>Modes</h4>
+        <a href="{% url 'animation_page' %}">Animation Mode</a>
+        <a href="{% url 'theory_page' %}">Theory &amp; Practice</a>
+        <a href="{% url 'game_page' %}">Game Mode</a>
+      </div>
+      <div>
+        <h4>Languages</h4>
+        <a href="{% url 'language_page' %}">English · हिन्दी</a>
+        <a href="{% url 'language_page' %}">తెలుగు · ગુજરાતી</a>
+        <a href="{% url 'language_page' %}">मराठी</a>
+      </div>
+    </div>
+    <p class="footer-copy">© 2026 Algoria · Python Learning Hub. Built for curious beginners.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var PRESETS = [
+    {name:'Algoria',  colors:['#d946ef','#6366f1','#38bdf8']},
+    {name:'Emerald',  colors:['#34d399','#14b8a6','#3b82f6']},
+    {name:'Sunset',   colors:['#fbbf24','#fb923c','#f43f5e']},
+    {name:'Royal',    colors:['#e879f9','#a78bfa','#6366f1']},
+    {name:'Ocean',    colors:['#2dd4bf','#38bdf8','#4f46e5']},
+    {name:'Mono',     colors:['#cbd5e1','#94a3b8','#64748b']},
+  ];
+  var STORAGE_KEY = 'algoria_theme_colors';
+
+  function toRgba(hex, a){
+    var h = hex.replace('#','');
+    if(h.length === 3){ h = h.split('').map(function(c){return c+c;}).join(''); }
+    var n = parseInt(h, 16);
+    return 'rgba(' + [(n>>16)&255,(n>>8)&255,n&255].join(',') + ',' + a + ')';
+  }
+
+  function applyTheme(colors, persist){
+    var root = document.documentElement.style;
+    root.setProperty('--green', colors[0]);
+    root.setProperty('--teal', colors[1]);
+    root.setProperty('--blue', colors[2]);
+    root.setProperty('--gradient-brand', 'linear-gradient(120deg, ' + colors[0] + ' 0%, ' + colors[1] + ' 48%, ' + colors[2] + ' 100%)');
+    root.setProperty('--gradient-brand-soft', 'linear-gradient(120deg, ' + toRgba(colors[0],0.16) + ' 0%, ' + toRgba(colors[1],0.14) + ' 48%, ' + toRgba(colors[2],0.16) + ' 100%)');
+    root.setProperty('--gradient-text', 'linear-gradient(100deg, ' + colors[0] + ' 0%, ' + colors[1] + ' 45%, ' + colors[2] + ' 100%)');
+    if(persist !== false){
+      try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(colors)); }catch(e){}
+    }
+    markActiveSwatch(colors);
+  }
+
+  function markActiveSwatch(colors){
+    var swatches = Array.prototype.slice.call(document.querySelectorAll('.theme-swatch'));
+    swatches.forEach(function(sw){
+      sw.classList.toggle('active', sw.dataset.colors === colors.join(','));
+    });
+  }
+
+  function resetTheme(){
+    try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+    applyTheme(PRESETS[0].colors, false);
+    document.getElementById('customColor1').value = PRESETS[0].colors[0];
+    document.getElementById('customColor2').value = PRESETS[0].colors[1];
+    document.getElementById('customColor3').value = PRESETS[0].colors[2];
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var swatchContainer = document.getElementById('themeSwatches');
+    PRESETS.forEach(function(p){
+      var sw = document.createElement('div');
+      sw.className = 'theme-swatch';
+      sw.title = p.name;
+      sw.dataset.colors = p.colors.join(',');
+      sw.style.background = 'linear-gradient(135deg, ' + p.colors[0] + ', ' + p.colors[1] + ', ' + p.colors[2] + ')';
+      sw.addEventListener('click', function(){
+        applyTheme(p.colors);
+        document.getElementById('customColor1').value = p.colors[0];
+        document.getElementById('customColor2').value = p.colors[1];
+        document.getElementById('customColor3').value = p.colors[2];
+      });
+      swatchContainer.appendChild(sw);
+    });
+
+    var saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(STORAGE_KEY)); }catch(e){}
+    if(saved && saved.length === 3){
+      markActiveSwatch(saved);
+      document.getElementById('customColor1').value = saved[0];
+      document.getElementById('customColor2').value = saved[1];
+      document.getElementById('customColor3').value = saved[2];
+    } else {
+      markActiveSwatch(PRESETS[0].colors);
+    }
+
+    var toggleBtn = document.getElementById('themeToggleBtn');
+    var panel = document.getElementById('themePanel');
+    toggleBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      panel.classList.toggle('open');
+    });
+    document.addEventListener('click', function(e){
+      if(!panel.contains(e.target) && e.target !== toggleBtn){
+        panel.classList.remove('open');
+      }
+    });
+
+    function applyCustom(){
+      applyTheme([
+        document.getElementById('customColor1').value,
+        document.getElementById('customColor2').value,
+        document.getElementById('customColor3').value,
+      ]);
+    }
+    ['customColor1','customColor2','customColor3'].forEach(function(id){
+      document.getElementById(id).addEventListener('input', applyCustom);
+    });
+    document.getElementById('themeResetBtn').addEventListener('click', resetTheme);
+  });
+})();
+</script>
+
+<script>
+(function(){
+  var sidebar = document.getElementById('appSidebar');
+  var toggleBtn = document.getElementById('sidebarToggle');
+  if(!sidebar || !toggleBtn) return;
+
+  var STORAGE_KEY = 'algoria_sidebar_expanded';
+  try{
+    if(localStorage.getItem(STORAGE_KEY) === '1'){ sidebar.classList.add('expanded'); }
+  }catch(e){}
+
+  function setExpanded(on){
+    sidebar.classList.toggle('expanded', on);
+    toggleBtn.title = on ? 'Collapse menu' : 'Expand menu';
+    try{ localStorage.setItem(STORAGE_KEY, on ? '1' : '0'); }catch(e){}
+  }
+
+  toggleBtn.addEventListener('click', function(e){
+    e.stopPropagation();
+    setExpanded(!sidebar.classList.contains('expanded'));
+  });
+  document.addEventListener('click', function(e){
+    if(sidebar.classList.contains('expanded') && !sidebar.contains(e.target)){
+      setExpanded(false);
+    }
+  });
+})();
+</script>
+
+<script>
+/* Custom animated sidebar scrollbar — draws its own slim gradient thumb
+   and keeps it in sync with scroll position, since we hide the native
+   scrollbar everywhere (some browsers/WebViews ignore ::-webkit-scrollbar
+   rules and fall back to a bulky native bar). */
+(function(){
+  var sidebar = document.getElementById('appSidebar');
+  var thumb = document.getElementById('sidebarScrollThumb');
+  if(!sidebar || !thumb) return;
+
+  var hideTimer = null;
+
+  function layout(){
+    var trackH = sidebar.clientHeight;
+    var contentH = sidebar.scrollHeight;
+    if(contentH <= trackH + 1){
+      thumb.style.opacity = '0';
+      thumb.style.pointerEvents = 'none';
+      return;
+    }
+    var thumbH = Math.max(28, trackH * (trackH / contentH));
+    var maxTop = trackH - thumbH;
+    var maxScroll = contentH - trackH;
+    var ratio = maxScroll > 0 ? (sidebar.scrollTop / maxScroll) : 0;
+    thumb.style.height = thumbH + 'px';
+    thumb.style.transform = 'translateY(' + (maxTop * ratio) + 'px)';
+  }
+
+  function reveal(){
+    thumb.classList.add('visible');
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(function(){ thumb.classList.remove('visible'); }, 1200);
+  }
+
+  sidebar.addEventListener('scroll', function(){ layout(); reveal(); }, {passive:true});
+  sidebar.addEventListener('mouseenter', function(){ layout(); reveal(); });
+  sidebar.addEventListener('touchstart', function(){ layout(); reveal(); }, {passive:true});
+  window.addEventListener('resize', layout);
+
+  layout();
+})();
+</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Accessibility controls: light/dark, font size, density, reduced motion.
+   Stored client-side (localStorage) like the color theme; also POSTed to
+   the server for logged-in students via /settings/ so it follows them
+   across devices.
+   --------------------------------------------------------------------- */
+(function(){
+  var KEY = 'algoria_a11y';
+  var html = document.documentElement;
+
+  function load(){
+    try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; }
+  }
+  function save(a11y){
+    try{ localStorage.setItem(KEY, JSON.stringify(a11y)); }catch(e){}
+  }
+  function apply(a11y){
+    if(a11y.theme) html.setAttribute('data-theme', a11y.theme);
+    if(a11y.font) html.setAttribute('data-font', a11y.font);
+    if(a11y.density) html.setAttribute('data-density', a11y.density);
+    if(a11y.motion){ html.setAttribute('data-motion', 'reduced'); }
+    else { html.removeAttribute('data-motion'); }
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var modeSel = document.getElementById('a11yMode');
+    var fontSel = document.getElementById('a11yFont');
+    var densitySel = document.getElementById('a11yDensity');
+    var motionChk = document.getElementById('a11yMotion');
+    if(!modeSel) return;
+
+    var current = {
+      theme: html.getAttribute('data-theme') || 'dark',
+      font: html.getAttribute('data-font') || 'medium',
+      density: html.getAttribute('data-density') || 'comfortable',
+      motion: html.getAttribute('data-motion') === 'reduced',
+    };
+    modeSel.value = current.theme;
+    fontSel.value = current.font;
+    densitySel.value = current.density;
+    motionChk.checked = current.motion;
+
+    function onChange(){
+      var a11y = {
+        theme: modeSel.value, font: fontSel.value,
+        density: densitySel.value, motion: motionChk.checked,
+      };
+      apply(a11y);
+      save(a11y);
+    }
+    [modeSel, fontSel, densitySel].forEach(function(el){
+      el.addEventListener('change', onChange);
+    });
+    motionChk.addEventListener('change', onChange);
+  });
+})();
+</script>
+
+<!-- Algoria tutor chat widget -->
+<div id="algoriaChat" class="algoria-chat">
+  <button type="button" id="chatToggleBtn" class="chat-fab" aria-label="Chat with Algoria, your Python tutor">
+    <img src="{% static 'learning/img/logo_mark_transparent.png' %}" alt="">
+  </button>
+
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <img src="{% static 'learning/img/logo_mark_transparent.png' %}" alt="" class="chat-header-avatar">
+      <div class="chat-header-text">
+        <strong>Algoria</strong>
+        <span>Your Python tutor</span>
+      </div>
+      <button type="button" class="chat-icon-btn" id="chatResetBtn" title="Start a new conversation">↺</button>
+      <button type="button" class="chat-icon-btn" id="chatCloseBtn" title="Close" aria-label="Close chat">✕</button>
+    </div>
+
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg chat-msg-bot">
+        <div class="chat-bubble">Hi, I'm Algoria! 👋 Ask me anything about Python — I'll explain it with easy examples. What are you stuck on?</div>
+      </div>
+    </div>
+
+    <form class="chat-input-row" id="chatForm">
+      <textarea id="chatInput" placeholder="Ask Algoria a question..." rows="1" maxlength="2000"></textarea>
+      <button type="submit" class="chat-send-btn" id="chatSendBtn" aria-label="Send">➤</button>
+    </form>
+  </div>
+</div>
+
+<script id="chatHistoryData" type="application/json">{{ chat_history_json|safe }}</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Algoria tutor chat widget
+   --------------------------------------------------------------------- */
+(function(){
+  function getCsrfToken(){
+    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var toggleBtn = document.getElementById('chatToggleBtn');
+    var closeBtn = document.getElementById('chatCloseBtn');
+    var resetBtn = document.getElementById('chatResetBtn');
+    var panel = document.getElementById('chatPanel');
+    var messages = document.getElementById('chatMessages');
+    var form = document.getElementById('chatForm');
+    var input = document.getElementById('chatInput');
+    var widget = document.getElementById('algoriaChat');
+
+    function addBubble(text, who){
+      var row = document.createElement('div');
+      row.className = 'chat-msg chat-msg-' + who;
+      var bubble = document.createElement('div');
+      bubble.className = 'chat-bubble';
+      bubble.textContent = text;
+      row.appendChild(bubble);
+      messages.appendChild(row);
+      messages.scrollTop = messages.scrollHeight;
+      return bubble;
+    }
+
+    function addTyping(){
+      var row = document.createElement('div');
+      row.className = 'chat-msg chat-msg-bot';
+      row.id = 'chatTypingRow';
+      row.innerHTML = '<div class="chat-bubble chat-typing"><span></span><span></span><span></span></div>';
+      messages.appendChild(row);
+      messages.scrollTop = messages.scrollHeight;
+    }
+    function removeTyping(){
+      var row = document.getElementById('chatTypingRow');
+      if(row) row.remove();
+    }
+
+    // Restore prior conversation for this session (if any)
+    try{
+      var histEl = document.getElementById('chatHistoryData');
+      var history = histEl ? JSON.parse(histEl.textContent || '[]') : [];
+      if(history.length){
+        messages.innerHTML = '';
+        history.forEach(function(m){
+          addBubble(m.content, m.role === 'user' ? 'user' : 'bot');
+        });
+      }
+    }catch(e){}
+
+    function openPanel(){
+      panel.classList.add('open');
+      widget.classList.add('open');
+      setTimeout(function(){ input.focus(); }, 150);
+    }
+    function closePanel(){
+      panel.classList.remove('open');
+      widget.classList.remove('open');
+    }
+
+    toggleBtn.addEventListener('click', function(){
+      if(panel.classList.contains('open')){ closePanel(); } else { openPanel(); }
+    });
+    closeBtn.addEventListener('click', closePanel);
+
+    resetBtn.addEventListener('click', function(){
+      fetch('{% url "chat_reset" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': getCsrfToken()},
+      }).then(function(){
+        messages.innerHTML = '';
+        addBubble("New conversation started. What would you like to learn?", 'bot');
+      }).catch(function(){});
+    });
+
+    input.addEventListener('input', function(){
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+    input.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event('submit', {cancelable:true}));
+      }
+    });
+
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var text = input.value.trim();
+      if(!text) return;
+      addBubble(text, 'user');
+      input.value = '';
+      input.style.height = 'auto';
+      addTyping();
+
+      fetch('{% url "chat_send" %}', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({message: text}),
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        removeTyping();
+        if(data.ok){
+          addBubble(data.reply, 'bot');
+        } else {
+          addBubble(data.error || "Something went wrong. Please try again.", 'bot-error');
+        }
+      })
+      .catch(function(){
+        removeTyping();
+        addBubble("Couldn't reach Algoria — check your connection and try again.", 'bot-error');
+      });
+    });
+  });
+})();
+</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Logo page-transition: briefly shows the logo mark while navigating
+   between pages, so moving through the site feels like one connected
+   experience rather than a hard page jump.
+   --------------------------------------------------------------------- */
+(function(){
+  var overlay = document.getElementById('pageTransition');
+
+  window.addEventListener('pageshow', function(){
+    overlay.classList.remove('leaving');
+    overlay.classList.add('entering');
+    requestAnimationFrame(function(){
+      setTimeout(function(){ overlay.classList.remove('entering'); }, 320);
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    var link = e.target.closest('a[href]');
+    if(!link) return;
+    if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if(link.target && link.target !== '' && link.target !== '_self') return;
+    var href = link.getAttribute('href') || '';
+    if(!href || href.charAt(0) === '#') return;
+    if(link.origin !== window.location.origin) return;
+    if(link.hasAttribute('download')) return;
+    if(link.pathname === window.location.pathname && link.hash){
+      return; // same-page anchor link — let the browser do its native smooth scroll
+    }
+
+    e.preventDefault();
+    overlay.classList.add('leaving');
+    setTimeout(function(){ window.location.href = link.href; }, 260);
+  });
+})();
+</script>
+
+<script>
+/* ---------------------------------------------------------------------
+   Scroll-reveal: fades/slides elements with class="reveal" into view
+   as the learner scrolls past them. Runs once per element, respects
+   reduced-motion preferences.
+   --------------------------------------------------------------------- */
+(function(){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  document.addEventListener('DOMContentLoaded', function(){
+    var targets = Array.prototype.slice.call(document.querySelectorAll('.reveal'));
+    if(!targets.length) return;
+
+    if(!('IntersectionObserver' in window)){
+      targets.forEach(function(el){ el.classList.add('revealed'); });
+      return;
+    }
+
+    var observer = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if(entry.isIntersecting){
+          entry.target.classList.add('revealed');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+
+    targets.forEach(function(el){ observer.observe(el); });
+  });
+})();
+</script>
+
+</body>
+</html>

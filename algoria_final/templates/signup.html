@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Create your profile</span>
+  <h1 class="page-title">Join Algoria</h1>
+  <p class="page-sub">Your XP, streak, badges and progress will be saved here.</p>
+
+  <div class="panel form-shell">
+    {% if error %}<div class="form-error">{{ error }}</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus value="{{ request.POST.username }}">
+      </div>
+      <div class="form-field">
+        <label for="display_name">Display name (optional)</label>
+        <input type="text" id="display_name" name="display_name" value="{{ request.POST.display_name }}" placeholder="What should we call you?">
+      </div>
+      <div class="form-field">
+        <label>I am a...</label>
+        <div class="radio-row">
+          <label><input type="radio" name="role" value="student" checked> Student</label>
+          <label><input type="radio" name="role" value="teacher"> Teacher</label>
+        </div>
+      </div>
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div class="form-field">
+        <label for="password2">Confirm password</label>
+        <input type="password" id="password2" name="password2" required>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%;">Create account</button>
+    </form>
+    <p style="text-align:center;margin-top:18px;color:var(--muted);font-size:.88rem;">
+      Already have an account? <a href="{% url 'login_page' %}" style="color:var(--teal);">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Practice</span>
+  <h1 class="page-title" style="text-align:center;">📘 Choose a Topic</h1>
+  <p class="page-sub" style="text-align:center;">Short 5-question rounds with hints and explanations for every answer.</p>
+
+  {% for g in groups %}
+    <h3 class="topic-group-title">{{ g.label }}</h3>
+    <div class="card-grid">
+      {% for t in g.topics %}
+        <div class="select-card topic-card">
+          {% if t.accuracy is not None %}<span class="topic-acc">{{ t.accuracy }}%</span>{% endif %}
+          <div class="glyph">{{ t.icon }}</div>
+          <h3>{{ t.name }}</h3>
+          <p>5 quick questions on {{ t.name|lower }}.</p>
+          <a class="btn btn-primary" href="{% url 'practice_quiz' t.slug %}">Practice</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

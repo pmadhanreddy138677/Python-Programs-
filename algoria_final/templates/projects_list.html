@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Build Something Real</span>
+  <h1 class="page-title" style="text-align:center;">🛠️ Projects</h1>
+  <p class="page-sub" style="text-align:center;">Small guided projects that string several topics together into one finished program.</p>
+
+  <div class="card-grid">
+    {% for p in projects %}
+      <div class="select-card">
+        {% if p.done %}<span class="topic-acc" style="position:absolute;top:14px;right:14px;">✓ Done</span>{% endif %}
+        <div class="glyph">🧪</div>
+        <h3>{{ p.title }}</h3>
+        <p>{{ p.brief|truncatewords:18 }}</p>
+        <a class="btn btn-primary" href="{% url 'project_detail' p.slug %}">{% if p.done %}Revisit{% else %}Start building{% endif %}</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'dashboard' %}">← Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}

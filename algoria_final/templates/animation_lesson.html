@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    <a class="back-link" href="{% url 'animation_page' %}" style="margin:0;">← Video library</a>
+    <div class="mode-title">{{ lesson.icon }} {{ lesson.title }}</div>
+    <span></span>
+  </div>
+
+  <div class="panel">
+    <div class="anim-teacher">
+      {% include "_mascot.html" with uid="lesson" size=88 %}
+      <div class="anim-teacher-label">Aria says</div>
+    </div>
+    <div class="progress-line" id="progressLine"></div>
+    <div class="stage" id="stage"></div>
+    <div class="anim-controls">
+      <button class="btn btn-outline" id="prevBtn">Back</button>
+      <button class="btn btn-primary" id="nextBtn">Continue</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const STEPS = {{ steps_json|to_json|safe }};
+  const TOTAL = STEPS.length;
+  const PLAYGROUND_URL = "{% url 'playground_page' %}";
+  const PRACTICE_URL = {% if topic %}"{% url 'practice_quiz' topic.slug %}"{% else %}null{% endif %};
+
+  const stageEl = document.getElementById('stage');
+  const progressEl = document.getElementById('progressLine');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  let step = 0;
+  let cycleTimer = null;
+
+  function escapeHtml(s){
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function renderDiagram(boxes){
+    return '<div class="lesson-diagram-row">' + boxes.map(function(b, idx){
+      const arrow = idx < boxes.length - 1 ? '<span class="lesson-arrow">→</span>' : '';
+      const cls = 'lesson-box' + (b.variant === 'accent' ? ' accent' : '');
+      return '<div class="' + cls + '">' + escapeHtml(b.label) + '</div>' + arrow;
+    }).join('') + '</div>';
+  }
+
+  function renderStep(){
+    if(cycleTimer){ clearInterval(cycleTimer); cycleTimer = null; }
+    const s = STEPS[step];
+    progressEl.textContent = 'Step ' + (step + 1) + ' / ' + TOTAL;
+    let html = '';
+
+    if(s.kind === 'intro'){
+      html = '<div style="font-size:2.6rem;">' + s.icon + '</div>'
+           + '<div class="stage-text" id="cycleText" style="color:var(--muted);font-family:var(--mono);"></div>'
+           + '<div class="stage-text">' + escapeHtml(s.caption) + '</div>';
+      stageEl.innerHTML = html;
+      const cycleEl = document.getElementById('cycleText');
+      let i = 0;
+      cycleEl.textContent = s.cycle[0];
+      cycleTimer = setInterval(function(){
+        i = (i + 1) % s.cycle.length;
+        cycleEl.textContent = s.cycle[i];
+      }, 1100);
+
+    } else if(s.kind === 'code'){
+      html = '<div class="stage-text" style="margin-bottom:14px;">' + escapeHtml(s.caption) + '</div>'
+           + '<div class="code-line" id="codeLine"></div>';
+      if(s.output){ html += '<div class="lesson-output" id="codeOutput" style="display:none;">' + escapeHtml(s.output) + '</div>'; }
+      stageEl.innerHTML = html;
+      const codeEl = document.getElementById('codeLine');
+      const code = s.code;
+      let i = 0;
+      cycleTimer = setInterval(function(){
+        codeEl.textContent = code.slice(0, i);
+        i++;
+        if(i > code.length){
+          clearInterval(cycleTimer); cycleTimer = null;
+          const out = document.getElementById('codeOutput');
+          if(out) out.style.display = 'block';
+        }
+      }, 18);
+
+    } else if(s.kind === 'diagram'){
+      stageEl.innerHTML = '<div class="stage-text" style="margin-bottom:6px;">' + escapeHtml(s.caption) + '</div>'
+                         + renderDiagram(s.boxes);
+
+    } else if(s.kind === 'list'){
+      html = '<div class="stage-text" style="margin-bottom:10px;">' + escapeHtml(s.intro) + '</div>'
+           + '<ul class="recipe-list" id="recipeList"></ul>';
+      stageEl.innerHTML = html;
+      const list = document.getElementById('recipeList');
+      s.items.forEach(function(item){
+        const li = document.createElement('li');
+        li.textContent = item;
+        li.style.opacity = 0.25;
+        list.appendChild(li);
+      });
+      const items = Array.prototype.slice.call(list.querySelectorAll('li'));
+      let shown = 0;
+      cycleTimer = setInterval(function(){
+        if(shown < items.length){
+          items[shown].style.opacity = 1;
+          items[shown].classList.add('active');
+          shown++;
+        } else { clearInterval(cycleTimer); cycleTimer = null; }
+      }, 420);
+
+    } else if(s.kind === 'try'){
+      html = '<div style="font-size:2.2rem;">🚀</div>'
+           + '<div class="stage-text">' + escapeHtml(s.caption) + '</div>'
+           + '<div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap;">'
+           + '<a class="btn btn-primary" href="' + PLAYGROUND_URL + '?starter=' + encodeURIComponent(s.starter_code) + '">Open in Playground</a>';
+      if(PRACTICE_URL){ html += '<a class="btn btn-outline" href="' + PRACTICE_URL + '">Practice this topic</a>'; }
+      html += '</div>';
+      stageEl.innerHTML = html;
+    }
+
+    prevBtn.style.visibility = (step === 0) ? 'hidden' : 'visible';
+    nextBtn.style.visibility = (step === TOTAL - 1) ? 'hidden' : 'visible';
+  }
+
+  prevBtn.addEventListener('click', function(){ if(step > 0){ step--; renderStep(); } });
+  nextBtn.addEventListener('click', function(){ if(step < TOTAL - 1){ step++; renderStep(); } });
+
+  renderStep();
+})();
+</script>
+{% endblock %}

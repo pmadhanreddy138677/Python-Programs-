@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <div class="panel" style="text-align:center;">
+    <div class="trophy-burst">✅</div>
+    <h2>Daily Challenge already complete!</h2>
+    <p style="color:var(--muted);margin-top:8px;">You earned +{{ log.xp_awarded }} XP today. Come back tomorrow for a new one.</p>
+    <div class="final-actions">
+      <a class="btn btn-primary" href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

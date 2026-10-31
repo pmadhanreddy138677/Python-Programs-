@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="step-track">
+    <span class="step-dot active"></span><span class="step-dot active"></span><span class="step-dot active"></span>
+  </div>
+  <span class="eyebrow eyebrow-center">Step 3 of 3</span>
+  <h1 class="page-title">{% t "purpose_heading" %}</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="purpose-list">
+    {% for key in purposes %}
+      <a class="purpose-btn" href="{% url 'set_purpose' key %}">
+        {% if key == "college" %}{% t "purpose_college" %}
+        {% elif key == "webdev" %}{% t "purpose_webdev" %}
+        {% elif key == "gamedev" %}{% t "purpose_gamedev" %}
+        {% elif key == "job" %}{% t "purpose_job" %}
+        {% elif key == "interview" %}{% t "purpose_interview" %}
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'level_page' %}">{% t "menu_back" %}</a>
+  </div>
+</div>
+{% endblock %}

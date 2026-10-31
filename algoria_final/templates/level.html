@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="step-track">
+    <span class="step-dot active"></span><span class="step-dot active"></span><span class="step-dot"></span>
+  </div>
+  <span class="eyebrow eyebrow-center">Step 2 of 3</span>
+  <h1 class="page-title">{% t "level_heading" %}</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="card-grid">
+    <div class="select-card">
+      <div class="glyph">🌱</div>
+      <h3>{% t "level_beginner_title" %}</h3>
+      <p>{% t "level_beginner_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'set_level' 'beginner' %}">{% t "start_btn" %}</a>
+    </div>
+    <div class="select-card">
+      <div class="glyph">🚀</div>
+      <h3>{% t "level_intermediate_title" %}</h3>
+      <p>{% t "level_intermediate_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'set_level' 'intermediate' %}">{% t "start_btn" %}</a>
+    </div>
+    <div class="select-card">
+      <div class="glyph">🏆</div>
+      <h3>{% t "level_advanced_title" %}</h3>
+      <p>{% t "level_advanced_desc" %}</p>
+      <a class="btn btn-primary" href="{% url 'set_level' 'advanced' %}">{% t "start_btn" %}</a>
+    </div>
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'language_page' %}">{% t "menu_back" %}</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="step-track">
+    <span class="step-dot active"></span><span class="step-dot"></span><span class="step-dot"></span>
+  </div>
+  <span class="eyebrow eyebrow-center">Step 1 of 3</span>
+  <h1 class="page-title">🌐 Choose your language</h1>
+  <p class="page-sub">अपनी भाषा चुनें &nbsp;•&nbsp; మీ భాషను ఎంచుకోండి &nbsp;•&nbsp; તમારી ભાષા પસંદ કરો &nbsp;•&nbsp; तुमची भाषा निवडा</p>
+
+  <div class="card-grid">
+    {% for code, label in languages %}
+      <div class="select-card">
+        <div class="glyph">🌐</div>
+        <h3>{{ label }}</h3>
+        <p>&nbsp;</p>
+        <a class="btn btn-primary" href="{% url 'set_language' code %}">Select</a>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'landing' %}">← Back to home</a>
+  </div>
+</div>
+{% endblock %}

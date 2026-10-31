@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Welcome back</span>
+  <h1 class="page-title">Log in to Algoria</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel form-shell">
+    {% if error %}<div class="form-error">{{ error }}</div>{% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-field">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus value="{{ request.POST.username }}">
+      </div>
+      <div class="form-field">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <button class="btn btn-primary" type="submit" style="width:100%;">Log in</button>
+    </form>
+    <p style="text-align:center;margin-top:18px;color:var(--muted);font-size:.88rem;">
+      New here? <a href="{% url 'signup_page' %}" style="color:var(--teal);">Create a profile</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

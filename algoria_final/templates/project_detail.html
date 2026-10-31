@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell" style="max-width:1100px;">
+  <a class="back-link" href="{% url 'projects_list' %}">← Projects</a>
+  <span class="eyebrow eyebrow-center">Build Something Real</span>
+  <h1 class="page-title" style="text-align:center;">{{ project.title }}</h1>
+  <p class="page-sub" style="text-align:center;">{{ project.brief }}</p>
+
+  <div class="playground-shell" style="margin-top:22px;">
+    <div>
+      <textarea id="codeEditor" class="code-editor" spellcheck="false">{{ submission.code|default:project.starter_code }}</textarea>
+      <div style="margin-top:10px;">
+        <label style="font-size:.8rem;color:var(--muted);">Program input (one value per line, for input() calls)</label>
+        <textarea id="stdinBox" class="code-editor" style="min-height:60px;margin-top:6px;" spellcheck="false"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+        <button class="btn btn-outline" id="runBtn" type="button">▶ Run</button>
+        <form method="post" action="{% url 'project_submit' project.slug %}" id="submitForm">
+          {% csrf_token %}
+          <input type="hidden" name="code" id="codeToSubmit">
+          <button class="btn btn-primary" type="submit">{% if submission.completed %}Resubmit as complete{% else %}Mark complete (+{{ project.xp_reward }} XP){% endif %}</button>
+        </form>
+      </div>
+    </div>
+
+    <div>
+      <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;">Checklist</h4>
+      <div class="panel" style="padding:18px;">
+        <ul class="checklist">
+          {% for item in project.checklist_items %}<li>{{ item }}</li>{% endfor %}
+        </ul>
+      </div>
+
+      <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px;">Output</h4>
+      <div class="output-box" id="outputBox">Run your code to see the output here.</div>
+      <div class="explain-card" id="explainCard" style="display:none;">
+        <h4>🔍 Why did my code fail?</h4>
+        <p><strong id="explainTitle"></strong></p>
+        <p id="explainWhat" style="font-family:var(--mono);font-size:.8rem;"></p>
+        <p><strong>Why:</strong> <span id="explainWhy"></span></p>
+        <p><strong>How to fix it:</strong> <span id="explainHow"></span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  function getCsrfToken(){
+    var match = document.cookie.match(/(?:^|;\s*)csrftoken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+  }
+  var runBtn = document.getElementById('runBtn');
+  var outputBox = document.getElementById('outputBox');
+  var explainCard = document.getElementById('explainCard');
+
+  function showExplanation(exp){
+    if(!exp){ explainCard.style.display = 'none'; return; }
+    document.getElementById('explainTitle').textContent = exp.title;
+    document.getElementById('explainWhat').textContent = exp.what_happened;
+    document.getElementById('explainWhy').textContent = exp.why;
+    document.getElementById('explainHow').textContent = exp.how_to_fix;
+    explainCard.style.display = 'block';
+  }
+
+  runBtn.addEventListener('click', function(){
+    var code = document.getElementById('codeEditor').value;
+    var stdin = document.getElementById('stdinBox').value;
+    outputBox.textContent = 'Running…';
+    outputBox.classList.remove('has-error');
+    explainCard.style.display = 'none';
+    runBtn.disabled = true;
+
+    fetch('{% url "playground_run" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': getCsrfToken()},
+      body: 'code=' + encodeURIComponent(code) + '&stdin=' + encodeURIComponent(stdin),
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      runBtn.disabled = false;
+      if(!data.ok || data.timed_out){
+        outputBox.textContent = data.error || 'Something went wrong.';
+        outputBox.classList.add('has-error');
+        return;
+      }
+      if(data.success){
+        outputBox.textContent = data.output || '(no output)';
+        outputBox.classList.remove('has-error');
+        showExplanation(null);
+      } else {
+        outputBox.textContent = (data.output ? data.output + '\n' : '') + data.error;
+        outputBox.classList.add('has-error');
+        showExplanation(data.explanation);
+      }
+    })
+    .catch(function(){
+      runBtn.disabled = false;
+      outputBox.textContent = "Couldn't reach the server — check your connection and try again.";
+      outputBox.classList.add('has-error');
+    });
+  });
+
+  document.getElementById('submitForm').addEventListener('submit', function(){
+    document.getElementById('codeToSubmit').value = document.getElementById('codeEditor').value;
+  });
+})();
+</script>
+{% endblock %}

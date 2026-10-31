@@ -1,0 +1,84 @@
+{% load algoria_extras %}
+<div class="guide-overlay hidden" id="guideOverlay">
+  <div class="guide-card">
+    <div class="guide-mascot">{% include "_mascot.html" with uid="guide" size=100 %}</div>
+    <div class="guide-bubble">
+      <h4 id="guideTitle"></h4>
+      <p id="guideText"></p>
+    </div>
+    <div class="guide-dots" id="guideDots"></div>
+    <div class="guide-actions">
+      <button type="button" class="guide-skip" id="guideSkip">Skip</button>
+      <button type="button" class="btn btn-primary" id="guideNext" style="padding:8px 20px;font-size:.88rem;">Next</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var STUDENT_STEPS = [
+    {title: "Hey, I'm Aria! ✨", text: "I'm the guardian of Algoria — I'll be popping up to help you find your way. Let's do a 30-second tour of your dashboard."},
+    {title: "Your home base", text: "Your level, XP bar, streak and badges all live on the Dashboard — that's your personalized snapshot every time you log in."},
+    {title: "Practice & Playground", text: "📘 Practice gives you short quizzes by topic. 💻 Playground lets you write and run real Python, with plain-English help if your code errors out."},
+    {title: "Daily Challenge & Streak", text: "📅 One quick Daily Challenge keeps your 🔥 streak alive. Miss a day by accident? You get one Streak Freeze a week, so don't stress about it."},
+    {title: "Projects & Friends", text: "🛠️ Projects let you build small real programs step by step. 🤝 Friends lets you challenge someone to a head-to-head quiz."},
+    {title: "One more thing", text: "📊 Analytics and 🤖 AI Analysis show where you're strongest and what to practice next. Tap 'Ask Aria' in the sidebar anytime to see this again — good luck! ⭐"},
+  ];
+  var TEACHER_STEPS = [
+    {title: "Hi, I'm Aria! ✨", text: "I watch over Algoria for every student — and I've got a quick tour for you too, teacher."},
+    {title: "Your Teacher Dashboard", text: "See every student's level, XP, streak and accuracy at a glance, plus a live 'weak topics' chart for the whole class."},
+    {title: "Assignments & Challenges", text: "Create an assignment or challenge with an optional topic and deadline — it shows up on every student's dashboard automatically."},
+    {title: "That's it!", text: "Tap 'Ask Aria' in the sidebar anytime to see this again. Happy teaching! ⭐"},
+  ];
+
+  var isTeacher = {{ user.profile.is_teacher|yesno:"true,false" }};
+  var autoShowPage = {% if request.resolver_match.url_name == "dashboard" %}true{% else %}false{% endif %};
+  var steps = isTeacher ? TEACHER_STEPS : STUDENT_STEPS;
+  var storageKey = "algoria_guide_seen_" + "{{ user.username|escapejs }}";
+
+  var overlay = document.getElementById('guideOverlay');
+  var titleEl = document.getElementById('guideTitle');
+  var textEl = document.getElementById('guideText');
+  var dotsEl = document.getElementById('guideDots');
+  var nextBtn = document.getElementById('guideNext');
+  var skipBtn = document.getElementById('guideSkip');
+  var helpBtn = document.getElementById('guideHelpBtn');
+  var i = 0;
+
+  function renderDots(){
+    dotsEl.innerHTML = '';
+    steps.forEach(function(_, idx){
+      var d = document.createElement('span');
+      if(idx === i) d.className = 'active';
+      dotsEl.appendChild(d);
+    });
+  }
+
+  function renderStep(){
+    titleEl.textContent = steps[i].title;
+    textEl.textContent = steps[i].text;
+    nextBtn.textContent = (i === steps.length - 1) ? "Let's go!" : 'Next';
+    renderDots();
+  }
+
+  function open(){ i = 0; renderStep(); overlay.classList.remove('hidden'); }
+  function close(){
+    overlay.classList.add('hidden');
+    try{ localStorage.setItem(storageKey, '1'); }catch(e){}
+  }
+
+  nextBtn.addEventListener('click', function(){
+    if(i === steps.length - 1){ close(); return; }
+    i += 1; renderStep();
+  });
+  skipBtn.addEventListener('click', close);
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) close(); });
+  if(helpBtn) helpBtn.addEventListener('click', open);
+
+  if(autoShowPage){
+    var seen = false;
+    try{ seen = !!localStorage.getItem(storageKey); }catch(e){}
+    if(!seen){ setTimeout(open, 500); }
+  }
+})();
+</script>

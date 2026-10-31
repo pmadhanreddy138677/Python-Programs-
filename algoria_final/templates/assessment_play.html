@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    <span></span>
+    <div class="mode-title">🧠 Personal Assessment</div>
+    <span class="score-badge">Q{{ step }} / {{ total }}</span>
+  </div>
+
+  <div class="game-progress-wrap">
+    <div class="game-progress-track"><div class="game-progress-fill" style="width:calc(100% * {{ step }} / {{ total }});"></div></div>
+    <div class="game-progress-labels"><span>A quick mix of questions to find your starting point.</span></div>
+  </div>
+
+  <div class="panel game-body">
+    <div class="task-title">⚔ Quick check</div>
+    <p style="white-space:pre-line;">{{ question.text }}</p>
+    <form method="post" action="">
+      {% csrf_token %}
+      <div class="quiz-opts" style="margin-top:16px;">
+        {% for value, label in options %}
+          <button class="quiz-opt game-opt" name="choice" value="{{ value }}">{{ label }}</button>
+        {% endfor %}
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

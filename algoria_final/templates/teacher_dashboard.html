@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell" style="max-width:1080px;">
+  <span class="eyebrow eyebrow-center">Teacher tools</span>
+  <h1 class="page-title" style="text-align:center;">🧑‍🏫 Teacher Dashboard</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="dash-grid">
+    <div class="dash-card" style="grid-column: span 2;">
+      <h4>Class weak topics</h4>
+      {% if weak_topics %}
+        <div class="bar-chart">
+          {% for t in weak_topics %}
+            <div class="bar-row">
+              <div class="bar-label"><span>{{ t.name }}</span><span>{{ t.accuracy }}% ({{ t.attempts }} answers)</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:{{ t.accuracy }}%;"></div></div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:var(--muted);font-size:.88rem;">Not enough practice data yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="dash-card">
+      <h4>Create assignment / challenge</h4>
+      <form method="post" action="{% url 'teacher_assignment_create' %}">
+        {% csrf_token %}
+        <div class="form-field"><input type="text" name="title" placeholder="Title" required></div>
+        <div class="form-field"><textarea name="instructions" placeholder="Instructions (optional)" style="min-height:60px;"></textarea></div>
+        <div class="form-field">
+          <select name="topic_id">
+            <option value="">Any topic</option>
+            {% for t in topics %}<option value="{{ t.id }}">{{ t.icon }} {{ t.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="form-field"><input type="date" name="deadline"></div>
+        <button class="btn btn-primary" type="submit" style="width:100%;">Assign to all students</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Student progress</h4>
+    <table class="teacher-table">
+      <thead><tr><th>Student</th><th>Level</th><th>XP</th><th>Streak</th><th>Accuracy</th></tr></thead>
+      <tbody>
+        {% for s in students %}
+          <tr>
+            <td>{{ s.name }}</td>
+            <td>Level {{ s.level }}</td>
+            <td>{{ s.xp }}</td>
+            <td>🔥 {{ s.streak }}</td>
+            <td>{% if s.accuracy is not None %}{{ s.accuracy }}%{% else %}—{% endif %}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" style="color:var(--muted);">No students yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="panel" style="margin-top:22px;">
+    <h4 style="font-family:var(--mono);font-size:.78rem;color:var(--muted-2);text-transform:uppercase;letter-spacing:.08em;">Your assignments</h4>
+    {% for a in assignments %}
+      <div class="friend-card">
+        <div>
+          <strong>{{ a.title }}</strong>
+          <div style="font-size:.8rem;color:var(--muted);">{% if a.topic %}{{ a.topic.name }} · {% endif %}{% if a.deadline %}Due {{ a.deadline }}{% endif %} · {{ a.completions.count }} completed</div>
+        </div>
+      </div>
+    {% empty %}
+      <p style="color:var(--muted);font-size:.88rem;">No assignments created yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

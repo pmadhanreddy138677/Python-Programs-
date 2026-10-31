@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    <a class="back-link" href="{% url 'mode_page' %}" style="margin:0;">{% t "menu_back" %}</a>
+    <div class="mode-title">{% t "theory_mode_title" %}</div>
+    <span></span>
+  </div>
+
+  <div class="module-tabs">
+    {% for m in modules %}
+      <a class="module-tab{% if m.active %} active{% endif %}" href="?m={{ m.key }}">
+        <span class="module-tab-icon">{{ m.icon }}</span>
+        <span class="module-tab-label">{{ m.label }}</span>
+      </a>
+    {% endfor %}
+  </div>
+
+  <div class="panel">
+    {% if purpose_label %}
+      <div class="purpose-note">{% t "purpose_note_template" purpose=purpose_label %}</div>
+    {% endif %}
+
+    <div class="notes-box">{{ notes }}</div>
+
+    {% if related_topics %}
+      <div class="module-practice-cta">
+        <p class="module-practice-label">Practice what you just read:</p>
+        <div class="module-practice-links">
+          {% for t in related_topics %}
+            <a class="btn btn-outline btn-sm" href="{% url 'practice_quiz' t.slug %}">{{ t.icon }} {{ t.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
+    {% if show_intro_quiz %}
+    <div class="quiz-block">
+      <p class="quiz-q">{% t "practice1_q" %}</p>
+      <div class="quiz-opts" id="quiz1">
+        <button class="quiz-opt" data-value="input">{% t "opt_input" %}</button>
+        <button class="quiz-opt" data-value="process">{% t "opt_process" %}</button>
+        <button class="quiz-opt" data-value="output">{% t "opt_output" %}</button>
+      </div>
+      <p class="feedback" id="feedback1"></p>
+    </div>
+
+    <div class="quiz-block">
+      <p class="quiz-q">{% t "practice2_q" %}</p>
+      <div class="quiz-opts" id="quiz2">
+        <button class="quiz-opt" data-value="algorithm">{% t "opt_algorithm" %}</button>
+        <button class="quiz-opt" data-value="browser">{% t "opt_browser" %}</button>
+        <button class="quiz-opt" data-value="output">{% t "opt_output" %}</button>
+      </div>
+      <p class="feedback" id="feedback2"></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% if show_intro_quiz %}
+<script>
+function wireQuiz(containerId, feedbackId, correctValue, correctText, wrongText){
+  const container = document.getElementById(containerId);
+  const feedback = document.getElementById(feedbackId);
+  const opts = Array.prototype.slice.call(container.querySelectorAll('.quiz-opt'));
+  opts.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      opts.forEach(function(b){ b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      const ok = btn.dataset.value === correctValue;
+      feedback.textContent = ok ? correctText : wrongText;
+      feedback.className = 'feedback ' + (ok ? 'good' : 'bad');
+    });
+  });
+}
+wireQuiz('quiz1', 'feedback1', 'input', {% t "fb1_correct" as fb1c %}"{{ fb1c|escapejs }}", {% t "fb1_wrong" as fb1w %}"{{ fb1w|escapejs }}");
+wireQuiz('quiz2', 'feedback2', 'algorithm', {% t "fb2_correct" as fb2c %}"{{ fb2c|escapejs }}", {% t "fb2_wrong" as fb2w %}"{{ fb2w|escapejs }}");
+</script>
+{% endif %}
+{% endblock %}

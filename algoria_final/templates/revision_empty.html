@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="mode-shell">
+  <div class="panel" style="text-align:center;">
+    <div class="trophy-burst">🧠</div>
+    <h2>Nothing due for revision right now!</h2>
+    <p style="color:var(--muted);margin-top:8px;">
+      Questions you miss during Topic Practice show up here for a quick recap later —
+      that's how Smart Revision keeps weak spots from sticking around.
+    </p>
+    <div class="final-actions">
+      <a class="btn btn-primary" href="{% url 'practice_topics' %}">Practice a topic</a>
+      <a class="btn btn-outline" href="{% url 'dashboard' %}">Back to Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

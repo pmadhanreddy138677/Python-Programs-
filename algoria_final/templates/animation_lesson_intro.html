@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <div class="mode-top">
+    <a class="back-link" href="{% url 'animation_page' %}" style="margin:0;">← Video library</a>
+    <div class="mode-title">{% t "animation_mode_title" %}</div>
+    <span></span>
+  </div>
+
+  <div class="panel">
+    <div class="anim-teacher">
+      {% include "_mascot.html" with uid="anim" size=88 %}
+      <div class="anim-teacher-label">Aria says</div>
+    </div>
+    <div class="progress-line" id="progressLine"></div>
+    <div class="stage" id="stage"></div>
+    <div class="anim-controls">
+      <button class="btn btn-outline" id="prevBtn">{% t "back_btn" %}</button>
+      <button class="btn btn-primary" id="nextBtn">{% t "continue_btn" %}</button>
+    </div>
+
+    <div class="demo-row" id="demoRow" style="display:none;">
+      <span style="align-self:center;color:var(--muted);font-size:.9rem;">{% t "demo_prompt" %}</span>
+      <input type="text" id="demoName" placeholder="...">
+      <button class="btn btn-primary" id="runDemoBtn">{% t "run_demo_btn" %}</button>
+    </div>
+    <div class="demo-result" id="demoResult"></div>
+  </div>
+</div>
+
+<script>
+const TX = {{ strings_json|to_json|safe }};
+
+const STEP_LABELS = {
+  1: TX.anim_step1_label, 2: TX.anim_step2_label, 3: TX.anim_step3_label,
+  4: TX.anim_step4_label, 5: TX.anim_step5_label, 6: TX.anim_step6_label, 7: TX.anim_step7_label,
+};
+function progressText(step, total){
+  return TX.step_progress.replace('{step}', step).replace('{total}', total).replace('{label}', STEP_LABELS[step] || '');
+}
+function recipeLabel(n){ return TX.recipe_step_prefix.replace('{n}', n); }
+
+const stageEl = document.getElementById('stage');
+const progressLineEl = document.getElementById('progressLine');
+const demoRowEl = document.getElementById('demoRow');
+const demoResultEl = document.getElementById('demoResult');
+
+const TOTAL_STEPS = 7;
+let step = 1;
+
+function render(){
+  demoRowEl.style.display = 'none';
+  demoResultEl.textContent = '';
+  stageEl.innerHTML = '';
+
+  if(step === 1){
+    progressLineEl.textContent = progressText(1, TOTAL_STEPS);
+    stageEl.innerHTML = `
+      <div style="font-size:2.4rem;">🖥️</div>
+      <div class="stage-text" id="bubbleText" style="color:var(--muted);font-family:var(--mono);"></div>
+      <div class="stage-text">${TX.anim_step1_text}</div>`;
+    const bubbles = [TX.bubble1, TX.bubble2, TX.bubble3];
+    let i = 0;
+    const bubbleEl = document.getElementById('bubbleText');
+    bubbleEl.textContent = bubbles[0];
+    const iv = setInterval(() => {
+      i = (i + 1) % bubbles.length;
+      if(bubbleEl) bubbleEl.textContent = bubbles[i]; else clearInterval(iv);
+    }, 900);
+
+  } else if(step === 2){
+    progressLineEl.textContent = progressText(2, TOTAL_STEPS);
+    stageEl.innerHTML = `<div class="stage-text">${TX.anim_step2_text}</div>`;
+
+  } else if(step === 3){
+    progressLineEl.textContent = progressText(3, TOTAL_STEPS);
+    stageEl.innerHTML = `<ul class="recipe-list" id="recipeList"></ul>
+                        <div class="stage-text" style="margin-top:16px;">${TX.anim_algorithm_text}</div>`;
+    const list = document.getElementById('recipeList');
+    const recipe = [TX.recipe_step1, TX.recipe_step2, TX.recipe_step3, TX.recipe_step4];
+    recipe.forEach((r, idx) => {
+      const li = document.createElement('li');
+      li.textContent = recipeLabel(idx + 1) + ' ' + r;
+      list.appendChild(li);
+    });
+    const items = Array.prototype.slice.call(list.querySelectorAll('li'));
+    items.forEach(li => li.style.opacity = 0.25);
+    let shown = 0;
+    const iv = setInterval(() => {
+      if(shown < items.length){
+        items[shown].style.opacity = 1;
+        items[shown].classList.add('active');
+        shown++;
+      } else { clearInterval(iv); }
+    }, 400);
+
+  } else if(step === 4){
+    progressLineEl.textContent = progressText(4, TOTAL_STEPS);
+    stageEl.innerHTML = `
+      <div class="stage-text" style="margin-bottom:14px;">${TX.ipo_example_caption}</div>
+      <div class="ipo-row">
+        <div class="ipo-box">${TX.box_input}</div><span class="ipo-arrow">→</span>
+        <div class="ipo-box process">${TX.box_process}</div><span class="ipo-arrow">→</span>
+        <div class="ipo-box output">${TX.box_output}</div>
+      </div>
+      <div class="stage-text">${TX.ipo_explain_text}</div>`;
+
+  } else if(step === 5){
+    progressLineEl.textContent = progressText(5, TOTAL_STEPS);
+    stageEl.innerHTML = `
+      <div class="stage-text" style="margin-bottom:14px;">${TX.second_example_text}</div>
+      <div class="stage-text" style="margin-bottom:14px;font-weight:600;">${TX.atm_caption}</div>
+      <div class="ipo-row">
+        <div class="ipo-box">${TX.atm_input}</div><span class="ipo-arrow">→</span>
+        <div class="ipo-box process">${TX.atm_process}</div><span class="ipo-arrow">→</span>
+        <div class="ipo-box output">${TX.atm_output}</div>
+      </div>
+      <div class="stage-text">${TX.atm_explain_text}</div>`;
+
+  } else if(step === 6){
+    progressLineEl.textContent = progressText(6, TOTAL_STEPS);
+    stageEl.innerHTML = `
+      <div class="stage-text" style="margin-bottom:14px;">${TX.first_code_text}</div>
+      <div class="code-line" id="codeLine"></div>
+      <div class="stage-text" style="margin-top:16px;">${TX.code_explain_text}</div>`;
+    const codeEl = document.getElementById('codeLine');
+    const code = 'print("Hello, Algoria!")';
+    let i = 0;
+    const iv = setInterval(() => {
+      if(codeEl){
+        codeEl.textContent = code.slice(0, i);
+        i++;
+        if(i > code.length) clearInterval(iv);
+      } else clearInterval(iv);
+    }, 45);
+
+  } else if(step === 7){
+    progressLineEl.textContent = progressText(7, TOTAL_STEPS);
+    stageEl.innerHTML = `
+      <div class="code-line">print("Hello, Algoria!")</div>
+      <div class="stage-text" style="color:var(--good);">Hello, Algoria!</div>
+      <div class="stage-text">${TX.final_explain_text}</div>`;
+    demoRowEl.style.display = 'flex';
+  }
+
+  document.getElementById('prevBtn').style.visibility = (step === 1) ? 'hidden' : 'visible';
+  document.getElementById('nextBtn').style.visibility = (step === TOTAL_STEPS) ? 'hidden' : 'visible';
+}
+
+document.getElementById('prevBtn').addEventListener('click', () => { if(step > 1){ step--; render(); } });
+document.getElementById('nextBtn').addEventListener('click', () => { if(step < TOTAL_STEPS){ step++; render(); } });
+document.getElementById('runDemoBtn').addEventListener('click', () => {
+  const name = document.getElementById('demoName').value.trim() || 'friend';
+  demoResultEl.textContent = TX.processing_text;
+  demoResultEl.style.color = 'var(--muted)';
+  setTimeout(() => {
+    demoResultEl.textContent = TX.demo_output.replace('{name}', name);
+    demoResultEl.style.color = 'var(--good)';
+  }, 500);
+});
+
+render();
+</script>
+{% endblock %}

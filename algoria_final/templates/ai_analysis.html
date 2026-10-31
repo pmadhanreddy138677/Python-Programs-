@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load algoria_extras %}
+{% block content %}
+<div class="mode-shell">
+  <span class="eyebrow eyebrow-center">Step 8 of your learning path</span>
+  <h1 class="page-title" style="text-align:center;">🤖 AI Analysis</h1>
+  <p class="page-sub">&nbsp;</p>
+
+  <div class="panel">
+    {% if not ai_configured %}
+      <p style="font-size:.82rem;color:var(--muted-2);background:var(--bg-elevated);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:16px;">
+        Running on rule-based analysis right now — set an <code>ANTHROPIC_API_KEY</code> for a richer, AI-written version. Either way, the recommendation below is real and based on your actual stats.
+      </p>
+    {% endif %}
+
+    <p style="font-size:1.02rem;line-height:1.8;">{{ analysis_text|format_analysis }}</p>
+
+    {% if recommended_topic %}
+      <div class="dash-card" style="margin-top:22px;max-width:420px;">
+        <h4>🔄 Next recommendation</h4>
+        <div class="big-num gradient" style="font-size:1.15rem;">{{ recommended_topic.icon }} {{ recommended_topic.name }}</div>
+        <div class="mini-actions">
+          <a class="btn btn-primary" href="{% url 'practice_quiz' recommended_topic.slug %}">Practice this now</a>
+        </div>
+      </div>
+    {% elif recommended_name %}
+      <div class="dash-card" style="margin-top:22px;max-width:420px;">
+        <h4>🔄 Next recommendation</h4>
+        <div class="big-num gradient" style="font-size:1.05rem;">{{ recommended_name }}</div>
+        <div class="mini-actions"><a class="btn btn-outline" href="{% url 'practice_topics' %}">Browse topics</a></div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="back-center">
+    <a class="back-link" href="{% url 'dashboard' %}">← Back to Dashboard</a>
+  </div>
+</div>
+{% endblock %}
