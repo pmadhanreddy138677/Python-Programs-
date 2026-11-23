@@ -1,0 +1,9 @@
+{% extends "app_base.html" %}
+{% block title %}Reports · Campus admin{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Reports</h1><div class="mt-4">{% include "campusadmin/_nav.html" %}</div>
+<div class="card p-5"><div class="flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-bold">Ask Circliq</h2><p class="text-sm muted">{{ ask_open }} open report{{ ask_open|pluralize }}</p></div><a href="{% url 'ask:moderation' %}" class="btn btn-secondary !py-2">Review</a></div></div>
+<h2 class="mt-6 text-lg font-bold">Community reports</h2><p class="text-sm muted">Handled by each community's moderators. Open the community's moderation page to act.</p>
+<div class="mt-3 space-y-3">{% for r in community_reports %}<div class="card flex flex-wrap items-center gap-3 p-4"><span class="badge" style="background:rgba(239,68,68,.12);color:var(--err-text)">{{ r.get_reason_display }}</span><p class="min-w-0 flex-1 text-sm"><b>{{ r.community.name }}</b> · reported by {{ r.reporter.full_name }} · {{ r.created_at|timesince }} ago</p><a class="btn btn-secondary !py-1.5" href="{% url 'moderation:queue' r.community_id %}">Open queue</a></div>
+  {% empty %}<div class="card p-8 text-center muted">No open community reports.</div>{% endfor %}</div>
+{% endblock %}

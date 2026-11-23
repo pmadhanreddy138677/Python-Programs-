@@ -1,0 +1,2 @@
+{% comment %}members: list of membership objects with .user. Optional limit (default 4).{% endcomment %}
+<div class="stack">{% for mm in members|slice:":4" %}{% include "components/avatar.html" with u=mm.user size="h-8 w-8" text="text-xs" %}{% endfor %}{% if members|length > 4 %}<span class="more">+{{ members|length|add:"-4" }}</span>{% endif %}</div>

@@ -1,0 +1,30 @@
+{% extends "app_base.html" %}
+{% block title %}Search · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">{% if q %}Results for “{{ q }}”{% else %}Search Circliq{% endif %}</h1>
+{% if q %}<p class="mt-1 muted">{{ total }} result{{ total|pluralize }} across your campus</p>{% endif %}
+{% if too_short %}<div class="card mt-5 p-8 text-center muted">Type at least two characters.</div>
+{% elif not q %}<div class="card mt-5 p-10 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="search" %}</span><p class="mt-3 text-lg font-semibold">Search people, communities, circles, projects, events and questions</p></div>
+{% elif not results %}<div class="card mt-5 p-10 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="search" %}</span><p class="mt-3 text-lg font-semibold">Nothing found</p><p class="mt-1 text-sm muted">Try a different word, or browse <a class="font-semibold" style="color:var(--primary)" href="{% url 'communities:list' %}">communities</a> and <a class="font-semibold" style="color:var(--primary)" href="{% url 'projects:list' %}">projects</a>.</p></div>
+{% else %}
+{% for section, items in results.items %}
+<section class="mt-6"><div class="mb-2 flex items-center justify-between"><h2 class="text-lg font-bold">{{ section }}</h2>
+  {% if section == "People" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'profiles:discover' %}?q={{ q|urlencode }}">See all</a>
+  {% elif section == "Communities" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'communities:list' %}?q={{ q|urlencode }}">See all</a>
+  {% elif section == "Circles" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'circles:list' %}?q={{ q|urlencode }}">See all</a>
+  {% elif section == "Projects" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'projects:list' %}?q={{ q|urlencode }}">See all</a>
+  {% elif section == "Events" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'events:list' %}?q={{ q|urlencode }}">See all</a>
+  {% elif section == "Questions" %}<a class="text-sm font-semibold" style="color:var(--primary)" href="{% url 'ask:list' %}?q={{ q|urlencode }}">See all</a>{% endif %}</div>
+  <div class="card overflow-hidden">
+  {% for x in items %}
+    {% if section == "People" %}<a href="{% url 'profiles:detail' x.pk %}" class="sresult">{% include "components/avatar.html" with u=x size="h-10 w-10" %}<div class="min-w-0"><p class="font-semibold">{{ x.full_name }}</p><p class="truncate text-xs muted">{{ x.program|default:x.department|default:"" }}{% if x.academic_year %} · Year {{ x.academic_year }}{% endif %}</p></div></a>
+    {% elif section == "Faculty" %}<a href="{% url 'faculty:detail' x.pk %}" class="sresult">{% include "components/avatar.html" with u=x size="h-10 w-10" %}<div class="min-w-0"><p class="font-semibold">{{ x.full_name }}</p><p class="truncate text-xs muted">{{ x.faculty_profile.designation|default:"Faculty" }} · {{ x.faculty_profile.expertise }}</p></div></a>
+    {% elif section == "Communities" %}<a href="{% url 'communities:detail' x.pk %}" class="sresult"><span class="c-icon h-10 w-10 shrink-0">{{ x.name|slice:":1" }}</span><div class="min-w-0"><p class="font-semibold">{{ x.name }}{% if x.is_private %} 🔒{% endif %}</p><p class="truncate text-xs muted">{{ x.description }}</p></div></a>
+    {% elif section == "Circles" %}<a href="{% url 'circles:detail' x.pk %}" class="sresult"><span class="icon-tile t-cyan !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="circles" %}</span><div class="min-w-0"><p class="font-semibold">{{ x.name }}</p><p class="truncate text-xs muted">{{ x.purpose }}</p></div></a>
+    {% elif section == "Projects" %}<a href="{% url 'projects:detail' x.pk %}" class="sresult"><span class="icon-tile t-amber !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="rocket" %}</span><div class="min-w-0"><p class="font-semibold">{{ x.title }}</p><p class="truncate text-xs muted">{{ x.get_status_display }} · {{ x.description }}</p></div></a>
+    {% elif section == "Events" %}<a href="{% url 'events:detail' x.pk %}" class="sresult"><div class="date-tile !h-11 !w-11"><b class="!text-sm">{{ x.start_at|date:"j" }}</b><small>{{ x.start_at|date:"M" }}</small></div><div class="min-w-0"><p class="font-semibold">{{ x.title }}</p><p class="truncate text-xs muted">{{ x.venue }}</p></div></a>
+    {% elif section == "Posts" %}<a href="{% url 'discussions:detail' x.pk %}" class="sresult"><span class="icon-tile t-indigo !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="chat" %}</span><div class="min-w-0"><p class="font-semibold">{{ x.title|default:x.body|truncatechars:70 }}</p><p class="truncate text-xs muted">{{ x.author.full_name }} in {{ x.community.name }}</p></div></a>
+    {% elif section == "Questions" %}<a href="{% url 'ask:detail' x.pk %}" class="sresult"><span class="icon-tile t-cyan !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="help" %}</span><div class="min-w-0"><p class="font-semibold">{{ x.title }}</p><p class="truncate text-xs muted">{{ x.get_category_display }}</p></div></a>{% endif %}
+  {% endfor %}</div></section>
+{% endfor %}{% endif %}
+{% endblock %}

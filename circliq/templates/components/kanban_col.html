@@ -1,0 +1,18 @@
+<div class="kb-col"><h4><span>{{ label }}</span><span data-colcount>{{ items|length }}</span></h4>
+  <div class="kb-drop" data-drop="{{ key }}">
+    {% for t in items %}
+    <div class="kb-card" draggable="true" data-task="{{ t.pk }}" data-move="{% url move_name t.pk %}">
+      <p class="text-sm font-medium">{{ t.title }}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-1">
+        {% if t.assignee %}<span class="flex items-center gap-1 text-xs muted">{% include "components/avatar.html" with u=t.assignee size="h-5 w-5" text="text-[9px]" %}{{ t.assignee.first_name }}</span>{% endif %}
+        <form method="post" action="{% url move_name t.pk %}" data-movebtns class="ml-auto flex">{% csrf_token %}
+          {% if key != "todo" %}<button class="mv" name="status" value="todo">← To do</button>{% endif %}
+          {% if key != "doing" %}<button class="mv" name="status" value="doing">Doing</button>{% endif %}
+          {% if key != "done" %}<button class="mv" name="status" value="done">Done ✓</button>{% endif %}
+        </form>
+        {% if manager or t.created_by_id == user.id %}<form method="post" action="{% url delete_name t.pk %}" data-confirm="Delete this task?">{% csrf_token %}<button class="mv" style="color:var(--err-text)" aria-label="Delete task">✕</button></form>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

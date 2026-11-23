@@ -1,0 +1,10 @@
+{% extends "app_base.html" %}
+{% block title %}Ask moderation · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Ask Circliq reports</h1>
+<div class="mt-5 space-y-3">{% for r in reports %}{% with t=r.question|default:r.answer %}
+  <div class="card p-4"><div class="flex flex-wrap items-center gap-2"><span class="badge" style="background:rgba(239,68,68,.12);color:var(--err-text)">{{ r.get_reason_display }}</span><span class="text-xs muted">Reported by {{ r.reporter.full_name }} · {{ r.created_at|timesince }} ago</span></div>
+    <p class="mt-2 text-sm"><b>{{ t.author.full_name }}:</b> {% if r.question %}{{ r.question.title }}{% else %}{{ r.answer.body|truncatewords:40 }}{% endif %}</p>
+    <div class="mt-3 flex gap-2"><form method="post" action="{% url 'ask:resolve' r.pk 'remove' %}">{% csrf_token %}<button class="btn btn-primary !py-1.5" style="background:var(--err)">Remove content</button></form><form method="post" action="{% url 'ask:resolve' r.pk 'dismiss' %}">{% csrf_token %}<button class="btn btn-secondary !py-1.5">Dismiss</button></form></div></div>{% endwith %}
+{% empty %}<div class="card p-10 text-center"><span class="icon-tile t-green">{% include "components/icon.html" with name="shield" %}</span><p class="mt-3 text-lg font-semibold">All clear</p></div>{% endfor %}</div>
+{% endblock %}

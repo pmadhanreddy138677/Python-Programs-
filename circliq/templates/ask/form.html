@@ -1,0 +1,7 @@
+{% extends "app_base.html" %}
+{% block title %}Ask a question · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Ask a question</h1><p class="mt-1 muted">Clear titles get faster answers.</p>
+<form method="post" class="card mt-5 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}{% include "components/field.html" with field=form.category %}{% include "components/field.html" with field=form.title %}{% include "components/field.html" with field=form.body %}
+  <div class="flex gap-3"><button class="btn btn-primary">Post question</button><a href="{% url 'ask:list' %}" class="btn btn-secondary">Cancel</a></div></form>
+{% endblock %}

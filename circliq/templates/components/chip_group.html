@@ -1,0 +1,2 @@
+<div class="mt-1">{% for c in field %}<label class="chip {{ cls }}">{{ c.tag }}<span>{{ c.choice_label }}</span></label>{% endfor %}</div>
+{% for e in field.errors %}<p class="field-error">{{ e }}</p>{% endfor %}

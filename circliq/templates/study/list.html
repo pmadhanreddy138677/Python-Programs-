@@ -1,0 +1,38 @@
+{% extends "app_base.html" %}
+{% block title %}Study Connect · circliq{% endblock %}
+{% block content %}
+<section class="hero hero-study p-6 sm:p-9">
+  <div class="relative z-10 max-w-xl"><h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Better Together. Learn Together.</h1>
+    <p class="mt-2 text-white/90">Post what you're studying and find partners, or join a group that's already forming.</p>
+    <a href="{% url 'study:create' %}" class="btn mt-5 !bg-white !text-indigo-700">{% include "components/icon.html" with name="plus" %}Create a study request</a></div>
+  <svg class="absolute bottom-4 right-8 hidden h-32 w-48 opacity-90 md:block" viewBox="0 0 200 130" fill="none" aria-hidden="true"><rect x="20" y="40" width="70" height="80" rx="10" fill="#fff" fill-opacity=".9"/><rect x="95" y="25" width="70" height="95" rx="10" fill="#fff" fill-opacity=".6"/><path d="M35 62h40M35 78h30M35 94h36M110 50h40M110 66h30M110 82h36" stroke="#4F46E5" stroke-width="5" stroke-linecap="round"/><circle cx="165" cy="30" r="14" fill="#06B6D4"/></svg>
+</section>
+<form method="get" class="mt-5 flex flex-wrap gap-2">
+  <input name="q" aria-label="Search" value="{{ q }}" class="input min-w-[220px] flex-1" placeholder="Search subject or topic…">
+  <select name="mode" class="input !w-auto" data-autosubmit aria-label="Mode"><option value="">Online or in person</option>{% for k, l in modes %}{% if k != "either" %}<option value="{{ k }}" {% if mode == k %}selected{% endif %}>{{ l }}</option>{% endif %}{% endfor %}</select>
+  <select name="scope" class="input !w-auto" data-autosubmit aria-label="Show"><option value="">Open requests</option><option value="mine" {% if scope == "mine" %}selected{% endif %}>My groups</option></select>
+  <button class="btn btn-secondary">Search</button></form>
+<div class="mt-5 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+  {% for r in page %}
+  {% cycle 't-cyan' 't-indigo' 't-violet' 't-green' 't-amber' as tilecls silent %}
+  <article class="card card-hover glow flex flex-col p-5">
+    <div class="flex items-start gap-3"><span class="icon-tile {{ tilecls }}">{% include "components/icon.html" with name="book" %}</span>
+      <div class="min-w-0"><p class="truncate text-lg font-bold">{{ r.subject }}</p><p class="truncate text-sm muted">{{ r.topic }}</p></div></div>
+    <p class="mt-3 text-sm"><span class="font-semibold">Goal:</span> {{ r.goal }}</p>
+    {% if r.description %}<p class="mt-1 line-clamp-2 text-sm muted">{{ r.description }}</p>{% endif %}
+    <div class="mt-3 flex flex-wrap gap-1.5"><span class="badge" style="background:rgba(6,182,212,.14);color:var(--cyan-text)">{% include "components/icon.html" with name="clock" %}</span><span class="badge">{{ r.schedule }}</span><span class="badge" style="background:var(--surface-2);color:var(--muted)">{{ r.get_mode_display }}</span></div>
+    <div class="mt-4 flex items-center gap-2 text-xs muted">{% include "components/avatar.html" with u=r.circle.created_by size="h-6 w-6" text="text-[10px]" %}<span>{{ r.circle.created_by.full_name }}</span></div>
+    <div class="mt-auto flex items-center justify-between gap-2 pt-4">
+      <div><div class="dots" aria-label="{{ r.slots }} spots left">{% for d in r.dots %}<i class="{{ d }}"></i>{% endfor %}</div><p class="mt-1 text-xs font-semibold">{% if r.slots %}{{ r.slots }} spot{{ r.slots|pluralize }} left{% else %}Full{% endif %}</p></div>
+      {% if r.c.state == "member" %}<a href="{% url 'circles:detail' r.c.pk %}" class="btn btn-secondary !py-2">Open group</a>
+      {% elif r.c.state == "pending" %}<span class="btn btn-ghost !py-2">Requested…</span>
+      {% elif not r.slots %}<span class="btn btn-ghost !py-2">Full</span>
+      {% else %}<form method="post" action="{% url 'circles:join' r.c.pk %}">{% csrf_token %}<button class="btn btn-primary !py-2">Join group</button></form>{% endif %}
+    </div>
+  </article>
+  {% empty %}<div class="card col-span-full p-10 text-center"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="book" %}</span><p class="mt-3 text-lg font-semibold">No study requests yet</p><p class="mt-1 text-sm muted">Be the first. Tell people what you're studying.</p><a href="{% url 'study:create' %}" class="btn btn-primary mt-4">Create a study request</a></div>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+  {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}<span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Next →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

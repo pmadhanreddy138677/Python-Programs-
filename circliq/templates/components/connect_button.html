@@ -1,0 +1,4 @@
+{% if rel == "connected" %}<span class="btn btn-ghost flex-1 !py-2" style="color:var(--ok-text)">✓ Connected</span>
+{% elif rel == "sent" %}<form method="post" action="{% url 'connections:cancel' conn %}" class="flex-1">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}"><button class="btn btn-ghost w-full !py-2">Requested · Undo</button></form>
+{% elif rel == "received" %}<form method="post" action="{% url 'connections:respond' conn 'accept' %}" class="flex-1">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}"><button class="btn btn-primary w-full !py-2">Accept</button></form>
+{% else %}<form method="post" action="{% url 'connections:send' other.pk %}" class="flex-1">{% csrf_token %}<input type="hidden" name="next" value="{{ next }}"><button class="btn btn-primary w-full !py-2">Connect</button></form>{% endif %}

@@ -1,0 +1,7 @@
+{% extends "app_base.html" %}
+{% block title %}New announcement · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">New announcement</h1><p class="mt-1 muted">Everyone at your campus will be notified.</p>
+<form method="post" class="card mt-5 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}{% include "components/field.html" with field=form.title %}{% include "components/field.html" with field=form.body %}{% include "components/field.html" with field=form.link %}
+  <div class="flex gap-3"><button class="btn btn-primary">Publish</button><a href="{% url 'faculty:announcements' %}" class="btn btn-secondary">Cancel</a></div></form>
+{% endblock %}

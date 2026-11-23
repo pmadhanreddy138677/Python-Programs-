@@ -1,0 +1,19 @@
+<div id="c{{ c.pk }}" class="{% if post.accepted_comment_id == c.pk %}accepted rounded-xl p-3{% endif %}">
+  <div class="flex gap-3">
+    <a href="{% url 'profiles:detail' c.author.pk %}">{% include "components/avatar.html" with u=c.author size="h-9 w-9" text="text-xs" %}</a>
+    <div class="min-w-0 flex-1">
+      <p class="text-sm"><a href="{% url 'profiles:detail' c.author.pk %}" class="font-semibold hover:underline">{{ c.author.full_name }}</a> <span class="text-xs muted">· {{ c.created_at|timesince }} ago</span>
+        {% if post.accepted_comment_id == c.pk %}<span class="badge ml-1" style="background:var(--ok-strong);color:#fff">✓ Accepted answer</span>{% endif %}</p>
+      <p class="mt-1 text-[15px] leading-relaxed">{{ c.body|linebreaksbr }}</p>
+      <div class="mt-1 flex flex-wrap items-center gap-1 text-xs">
+        {% if is_member and not is_reply %}<button type="button" class="act !py-1" data-reply-toggle="reply{{ c.pk }}">Reply</button>{% endif %}
+        {% if mine and post.kind == "question" and not is_reply %}<form method="post" action="{% url 'discussions:accept' post.pk c.pk %}">{% csrf_token %}<button class="act !py-1">{% if post.accepted_comment_id == c.pk %}Unaccept{% else %}Accept answer{% endif %}</button></form>{% endif %}
+        {% if c.author_id == user.id %}<form method="post" action="{% url 'discussions:comment_delete' c.pk %}" data-confirm="Delete this comment?">{% csrf_token %}<button class="act !py-1">Delete</button></form>
+        {% else %}<a href="{% url 'moderation:report_comment' c.pk %}" class="act !py-1">Report</a>{% endif %}
+      </div>
+      {% if is_member and not is_reply %}
+      <form id="reply{{ c.pk }}" method="post" action="{% url 'discussions:comment' post.pk %}" class="mt-2 hidden">{% csrf_token %}<input type="hidden" name="parent" value="{{ c.pk }}">
+        <textarea name="body" rows="2" maxlength="2000" class="input" placeholder="Write a reply…" aria-label="Write a reply"></textarea><button class="btn btn-primary mt-2 !py-1.5">Reply</button></form>{% endif %}
+    </div>
+  </div>
+</div>

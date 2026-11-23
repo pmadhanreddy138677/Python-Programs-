@@ -1,0 +1,13 @@
+{% extends "app_base.html" %}
+{% block title %}New study request · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Find study partners</h1>
+<p class="mt-1 muted">We'll create a private group workspace for you with scheduling, tasks and shared resources.</p>
+<form method="post" class="card mt-5 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  <div class="grid gap-3 sm:grid-cols-2">{% include "components/field.html" with field=form.subject %}{% include "components/field.html" with field=form.topic %}</div>
+  {% include "components/field.html" with field=form.goal %}{% include "components/field.html" with field=form.description %}
+  <div class="grid gap-3 sm:grid-cols-3">{% include "components/field.html" with field=form.group_size %}{% include "components/field.html" with field=form.schedule %}{% include "components/field.html" with field=form.mode %}</div>
+  <div class="flex gap-3"><button class="btn btn-primary">Post request</button><a href="{% url 'study:list' %}" class="btn btn-secondary">Cancel</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,13 @@
+<article class="card card-hover glow flex flex-col overflow-hidden">
+  <div class="cat cat-{{ e.category }} h-28">{% if e.banner %}<img src="{{ e.banner.url }}" alt="" class="absolute inset-0 h-full w-full object-cover">{% endif %}
+    <div class="ev-date absolute left-4 top-4 z-10"><small>{{ e.start_at|date:"M" }}</small><b>{{ e.start_at|date:"j" }}</b></div>
+    {% if e.is_official %}<span class="badge official absolute right-3 top-3 z-10">✓ Official</span>{% else %}<span class="badge absolute right-3 top-3 z-10">Student event</span>{% endif %}</div>
+  <div class="flex flex-1 flex-col p-5">
+    <a href="{% url 'events:detail' e.pk %}" class="text-lg font-bold leading-snug hover:underline">{{ e.title }}</a>
+    <p class="mt-2 flex items-center gap-1.5 text-sm muted"><span class="h-4 w-4">{% include "components/icon.html" with name="clock" %}</span>{{ e.start_at|date:"D, j M · g:i A" }}</p>
+    <p class="mt-1 flex items-center gap-1.5 text-sm muted"><span class="h-4 w-4">{% include "components/icon.html" with name="discover" %}</span>{{ e.venue }}</p>
+    <p class="mt-2 text-xs muted">By {{ e.organizer.full_name }} · {{ e.going }} going{% if e.capacity %} · {{ e.capacity }} spots{% endif %}</p>
+    <div class="mt-auto flex items-center gap-2 pt-4">
+      {% if e.i_go %}<a href="{% url 'events:detail' e.pk %}" class="btn btn-secondary flex-1 !py-2" style="color:var(--ok-text)">✓ Going</a>{% else %}<a href="{% url 'events:detail' e.pk %}" class="btn btn-primary flex-1 !py-2">View details</a>{% endif %}
+      <form method="post" action="{% url 'events:save' e.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act save {% if e.i_saved %}on{% endif %}" aria-label="Save event">{% include "components/icon.html" with name="bookmark" %}</button></form></div>
+  </div></article>

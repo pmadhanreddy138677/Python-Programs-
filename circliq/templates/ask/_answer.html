@@ -1,0 +1,21 @@
+<div id="a{{ a.pk }}" class="card p-5 {% if q.accepted_answer_id == a.pk %}accepted{% endif %}">
+  <div class="flex gap-4">
+    <div class="flex flex-col items-center gap-2">
+      {% if a.author_id != user.id %}<form method="post" action="{% url 'ask:helpful' a.pk %}" data-toggle>{% csrf_token %}<button class="helpful {% if a.i_voted %}on{% endif %}" aria-label="Mark helpful">{% include "components/icon.html" with name="thumb" %}<span data-count>{{ a.helpful }}</span></button></form>
+      {% else %}<span class="helpful cursor-default" title="Helpful votes">{% include "components/icon.html" with name="thumb" %}<span>{{ a.helpful }}</span></span>{% endif %}
+      {% if q.accepted_answer_id == a.pk %}<span class="text-lg" style="color:var(--ok-text)" title="Accepted answer">✓</span>{% endif %}
+    </div>
+    <div class="min-w-0 flex-1">
+      <p class="whitespace-pre-line text-[15px] leading-relaxed">{{ a.body }}</p>
+      <div class="mt-3 flex flex-wrap items-center gap-2 text-xs muted">
+        <a href="{% url 'profiles:detail' a.author.pk %}" class="flex items-center gap-1.5 font-semibold hover:underline">{% include "components/avatar.html" with u=a.author size="h-6 w-6" text="text-[10px]" %}{{ a.author.full_name }}</a>
+        {% if a.top_badge %}<span class="minibadge" title="{{ a.top_badge.rule }}">★ {{ a.top_badge.name }}</span>{% endif %}<span>· {{ a.created_at|timesince }} ago</span>
+        {% if mine %}<form method="post" action="{% url 'ask:accept' a.pk %}">{% csrf_token %}<button class="act !py-0.5">{% if q.accepted_answer_id == a.pk %}Unaccept{% else %}✓ Accept answer{% endif %}</button></form>{% endif %}
+        {% if a.author_id == user.id or is_admin %}<form method="post" action="{% url 'ask:answer_delete' a.pk %}" data-confirm="Delete this answer?">{% csrf_token %}<button class="act !py-0.5">Delete</button></form>{% endif %}
+        {% if a.author_id != user.id %}<form method="post" action="{% url 'ask:report_answer' a.pk %}" class="flex items-center gap-1">{% csrf_token %}<input type="hidden" name="reason" value="inappropriate"><button class="act !py-0.5" title="Report this answer">{% include "components/icon.html" with name="flag" %}</button></form>{% endif %}
+      </div>
+      {% if a.comment_list %}<div class="mt-3 space-y-1.5 border-l-2 pl-3" style="border-color:var(--border)">{% for c in a.comment_list %}<p class="text-sm"><span class="font-semibold">{{ c.author.first_name }}</span> {{ c.body }} <span class="text-xs muted">· {{ c.created_at|timesince }} ago</span>{% if c.author_id == user.id or is_admin %} <form method="post" action="{% url 'ask:comment_delete' c.pk %}" class="inline">{% csrf_token %}<button class="text-xs muted hover:underline">delete</button></form>{% endif %}</p>{% endfor %}</div>{% endif %}
+      <form method="post" action="{% url 'ask:comment' a.pk %}" class="mt-3 flex gap-2">{% csrf_token %}{{ comment_form.body }}<button class="btn btn-secondary !py-1.5 text-xs">Comment</button></form>
+    </div>
+  </div>
+</div>

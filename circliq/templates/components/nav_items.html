@@ -1,0 +1,23 @@
+{% with v=request.resolver_match.view_name %}
+<a href="{% url 'dashboard:home' %}" class="nav-item {% if v == 'dashboard:home' %}active{% endif %}" {% if v == 'dashboard:home' %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="home" %}Home</a>
+<p class="nav-group">Meet</p>
+<a href="{% url 'recommendations:match' %}" class="nav-item {% if 'recommendations:match' in v %}active{% endif %}" {% if 'recommendations:match' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="target" %}Campus Match</a>
+<a href="{% url 'profiles:discover' %}" class="nav-item {% if v == 'profiles:discover' %}active{% endif %}" {% if v == 'profiles:discover' %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="discover" %}Discover</a>
+<a href="{% url 'connections:list' %}" class="nav-item {% if 'connections' in v %}active{% endif %}" {% if 'connections' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="users" %}Connections{% if pending_requests_count %}<span class="badge ml-auto" style="background:var(--primary-strong);color:#fff">{{ pending_requests_count }}</span>{% endif %}</a>
+<a href="{% url 'messaging:inbox' %}" class="nav-item {% if 'messaging:' in v %}active{% endif %}" {% if 'messaging:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="chat" %}Messages{% if unread_messages %}<span class="badge ml-auto" style="background:var(--primary-strong);color:#fff">{{ unread_messages }}</span>{% endif %}</a>
+<p class="nav-group">Learn &amp; build</p>
+<a href="{% url 'communities:list' %}" class="nav-item {% if 'communities:' in v or 'moderation:queue' in v %}active{% endif %}" {% if 'communities:' in v or 'moderation:queue' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="grid" %}Communities</a>
+<a href="{% url 'ask:list' %}" class="nav-item {% if 'ask:' in v %}active{% endif %}" {% if 'ask:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="help" %}Ask Circliq</a>
+<a href="{% url 'circles:list' %}" class="nav-item {% if 'circles:' in v %}active{% endif %}" {% if 'circles:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="circles" %}My Circles</a>
+<a href="{% url 'study:list' %}" class="nav-item {% if 'study:' in v %}active{% endif %}" {% if 'study:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="book" %}Study Connect</a>
+<a href="{% url 'projects:list' %}" class="nav-item {% if 'projects:' in v %}active{% endif %}" {% if 'projects:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="rocket" %}Project Hub</a>
+<p class="nav-group">Campus</p>
+<a href="{% url 'events:list' %}" class="nav-item {% if 'events:' in v %}active{% endif %}" {% if 'events:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="calendar" %}Events</a>
+<a href="{% url 'faculty:directory' %}" class="nav-item {% if 'faculty:' in v %}active{% endif %}" {% if 'faculty:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="shield" %}Faculty Connect</a>
+<a href="{% url 'notifications:list' %}" class="nav-item {% if 'notifications:' in v %}active{% endif %}" {% if 'notifications:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="bell" %}Notifications{% if unread_notifications %}<span class="badge ml-auto" data-notif-badge style="background:var(--err-strong);color:#fff">{{ unread_notifications }}</span>{% endif %}</a>
+{% if user.role == "admin" or user.is_superuser %}<p class="nav-group">Administration</p>
+<a href="{% url 'campusadmin:dashboard' %}" class="nav-item {% if 'campusadmin:' in v %}active{% endif %}" {% if 'campusadmin:' in v %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="shield" %}Campus admin</a>{% endif %}
+<p class="nav-group">You</p>
+<a href="{% url 'discussions:saved' %}" class="nav-item {% if v == 'discussions:saved' %}active{% endif %}" {% if v == 'discussions:saved' %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="bookmark" %}Saved</a>
+<a href="{% url 'profiles:me' %}" class="nav-item {% if v == 'profiles:detail' or v == 'profiles:edit' %}active{% endif %}" {% if v == 'profiles:detail' or v == 'profiles:edit' %}aria-current="page"{% endif %}>{% include "components/icon.html" with name="user" %}Profile</a>
+{% endwith %}

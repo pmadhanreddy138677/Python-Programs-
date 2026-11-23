@@ -1,0 +1,13 @@
+{% extends "app_base.html" %}
+{% block title %}{{ title }} · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">{{ title }}</h1>
+<form method="post" class="mt-5 max-w-2xl space-y-5" novalidate>{% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  <div class="card space-y-4 p-5">{% include "components/field.html" with field=form.title %}{% include "components/field.html" with field=form.description %}{% include "components/field.html" with field=form.goals %}
+    <div class="grid gap-3 sm:grid-cols-2">{% include "components/field.html" with field=form.category %}{% include "components/field.html" with field=form.kind %}</div></div>
+  <div class="card space-y-4 p-5"><div><p class="label">Skills you need</p>{% include "components/chip_group.html" with field=form.required_skills %}</div>{% include "components/field.html" with field=form.technologies %}
+    <div class="grid gap-3 sm:grid-cols-2">{% include "components/field.html" with field=form.team_size %}{% include "components/field.html" with field=form.deadline %}</div></div>
+  <div class="flex gap-3"><button class="btn btn-primary">Save</button><a class="btn btn-secondary" href="{% if project %}{% url 'projects:detail' project.pk %}{% else %}{% url 'projects:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

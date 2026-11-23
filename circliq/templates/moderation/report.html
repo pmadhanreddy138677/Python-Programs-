@@ -1,0 +1,10 @@
+{% extends "app_base.html" %}
+{% block title %}Report · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Report {% if is_comment %}comment{% else %}post{% endif %}</h1>
+<p class="mt-1 muted">Reports go to this community's moderators. The author isn't told who reported.</p>
+<div class="card mt-4 max-w-2xl p-4 text-sm"><p class="line-clamp-3">{{ target.body|truncatewords:40 }}</p></div>
+<form method="post" class="card mt-4 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% include "components/field.html" with field=form.reason %}{% include "components/field.html" with field=form.details %}
+  <div class="flex gap-3"><button class="btn btn-primary">Submit report</button><a class="btn btn-secondary" href="#" data-back>Cancel</a></div></form>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends "app_base.html" %}
+{% block title %}{{ c.name }} · circliq{% endblock %}
+{% block content %}
+<div class="card overflow-hidden">
+  <div class="hero-circle h-3"></div>
+  <div class="p-5 sm:p-7">
+    <div class="flex flex-wrap items-start gap-4">
+      {% include "components/capacity_ring.html" with value=c.member_count max=c.max_members size=72 %}
+      <div class="min-w-0 flex-1">
+        <h1 class="text-2xl font-extrabold tracking-tight">{{ c.name }}</h1>
+        <div class="mt-1 flex flex-wrap items-center gap-1.5"><span class="badge">{{ c.get_category_display }}</span>
+          {% if c.kind == "study" %}<span class="badge" style="background:rgba(6,182,212,.14);color:var(--cyan-text)">Study group</span>{% endif %}
+          {% if c.status == "closed" %}<span class="pill pill-closed">Closed</span>{% elif full %}<span class="pill" style="background:rgba(245,158,11,.15);color:var(--warn-text)">Full</span>{% else %}<span class="pill pill-open">Open</span>{% endif %}
+          <span class="text-xs muted">· {{ c.get_join_policy_display }}{% if c.created_by %} · created by {{ c.created_by.full_name }}{% endif %}</span></div>
+        <p class="mt-3 max-w-2xl text-sm muted">{{ c.purpose }}</p>
+        <div class="mt-3 flex items-center gap-3">{% include "components/avatar_stack.html" with members=members_preview %}<span class="text-xs muted">{{ c.member_count }} of {{ c.max_members }} members</span></div>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {% if member %}
+          {% if owner %}<a href="{% url 'circles:edit' c.pk %}" class="btn btn-secondary">Edit</a>
+            <form method="post" action="{% url 'circles:toggle' c.pk %}">{% csrf_token %}<button class="btn btn-secondary">{% if c.status == "open" %}Close to new members{% else %}Reopen{% endif %}</button></form>
+            <form method="post" action="{% url 'circles:disband' c.pk %}" data-confirm="Disband this circle for everyone? This cannot be undone.">{% csrf_token %}<button class="btn btn-ghost" style="color:var(--err-text)">Disband</button></form>
+          {% else %}<form method="post" action="{% url 'circles:leave' c.pk %}" data-confirm="Leave this circle?">{% csrf_token %}<button class="btn btn-secondary">Leave</button></form>{% endif %}
+        {% elif m and m.status == "invited" %}
+          <form method="post" action="{% url 'circles:respond_invite' c.pk 'accept' %}">{% csrf_token %}<button class="btn btn-primary">Accept invitation</button></form>
+          <form method="post" action="{% url 'circles:respond_invite' c.pk 'decline' %}">{% csrf_token %}<button class="btn btn-secondary">Decline</button></form>
+        {% elif m and m.status == "pending" %}<span class="btn btn-ghost">Request pending…</span>
+        {% elif c.status == "open" %}<form method="post" action="{% url 'circles:join' c.pk %}">{% csrf_token %}<button class="btn btn-primary" {% if full and c.join_policy == 'open' %}disabled{% endif %}>{% if full and c.join_policy == 'open' %}Circle is full{% elif c.join_policy == 'approval' %}Request to join{% else %}Join circle{% endif %}</button></form>{% endif %}
+      </div>
+    </div>
+    {% if member %}<div class="mt-5"><p class="mb-1 text-xs font-semibold muted">Group progress · {{ task_count }} task{{ task_count|pluralize }}</p>{% include "components/progress.html" with value=progress %}</div>{% endif %}
+  </div>
+</div>
+
+{% if not member %}
+<div class="card mt-5 p-10 text-center"><span class="icon-tile t-violet">{% include "components/icon.html" with name="lock" %}</span><p class="mt-3 text-lg font-semibold">The workspace is for members</p><p class="mt-1 text-sm muted">Discussion, tasks, study sessions and shared resources are private to this circle.</p></div>
+{% else %}
+<div class="-mx-1 mt-5 flex gap-1 overflow-x-auto px-1">
+  <a class="tab {% if tab == 'discussion' %}active{% endif %}" href="?tab=discussion">Discussion</a>
+  <a class="tab {% if tab == 'tasks' %}active{% endif %}" href="?tab=tasks">Tasks</a>
+  <a class="tab {% if tab == 'sessions' %}active{% endif %}" href="?tab=sessions">Sessions</a>
+  <a class="tab {% if tab == 'resources' %}active{% endif %}" href="?tab=resources">Resources</a>
+  <a class="tab {% if tab == 'members' %}active{% endif %}" href="?tab=members">Members</a>
+</div>
+
+{% if tab == "discussion" %}
+  <form method="post" action="{% url 'circles:post_new' c.pk %}" class="card mt-4 p-4">{% csrf_token %}{{ post_form.body }}<button class="btn btn-primary mt-3 !py-2">Post</button></form>
+  <div class="mt-4 space-y-3">{% for p in posts %}
+    <div class="card flex gap-3 p-4">{% include "components/avatar.html" with u=p.author size="h-10 w-10" %}
+      <div class="min-w-0 flex-1"><p class="text-sm"><a href="{% url 'profiles:detail' p.author.pk %}" class="font-semibold hover:underline">{{ p.author.full_name }}</a> <span class="text-xs muted">· {{ p.created_at|timesince }} ago</span></p><p class="mt-1 text-[15px] leading-relaxed">{{ p.body|linebreaksbr }}</p></div>
+      {% if p.author_id == user.id or owner %}<form method="post" action="{% url 'circles:post_delete' p.pk %}">{% csrf_token %}<button class="act" aria-label="Delete">✕</button></form>{% endif %}</div>
+  {% empty %}<div class="card p-10 text-center"><p class="font-semibold">Quiet in here</p><p class="mt-1 text-sm muted">Say hello to your circle.</p></div>{% endfor %}</div>
+
+{% elif tab == "tasks" %}
+  <form method="post" action="{% url 'circles:task_new' c.pk %}" class="card mt-4 flex flex-wrap gap-2 p-4">{% csrf_token %}
+    <input name="title" class="input min-w-[200px] flex-1" placeholder="New task, e.g. Finish normalization notes" maxlength="150" required aria-label="New task, e.g. Finish normalization notes">{{ task_form.assignee }}<button class="btn btn-primary">{% include "components/icon.html" with name="plus" %}Add task</button></form>
+  <div class="mt-4">{% include "components/kanban.html" with move_name="circles:task_move" delete_name="circles:task_delete" manager=owner %}</div>
+
+{% elif tab == "sessions" %}
+  <details class="card mt-4 p-4"><summary class="flex items-center gap-2 font-semibold">{% include "components/icon.html" with name="calendar" %}Schedule a session <span class="ml-auto text-xs muted">Only members can see this</span></summary>
+    <form method="post" action="{% url 'circles:session_new' c.pk %}" class="mt-4 grid gap-3 sm:grid-cols-2">{% csrf_token %}
+      <div class="sm:col-span-2">{{ session_form.title }}</div><div>{{ session_form.starts_at }}</div><div>{{ session_form.duration_minutes }}</div><div>{{ session_form.mode }}</div><div>{{ session_form.location }}</div><div class="sm:col-span-2">{{ session_form.notes }}</div>
+      <button class="btn btn-primary sm:col-span-2">Schedule</button></form></details>
+  <h2 class="mt-6 text-lg font-bold">Upcoming</h2>
+  <div class="mt-3 space-y-3">{% for s in upcoming %}
+    <div class="card flex items-center gap-4 p-4"><div class="date-tile"><b>{{ s.starts_at|date:"j" }}</b><small>{{ s.starts_at|date:"M" }}</small></div>
+      <div class="min-w-0 flex-1"><p class="font-semibold">{{ s.title }}</p><p class="text-xs muted">{{ s.starts_at|date:"D, g:i A" }} · {{ s.duration_minutes }} min · {{ s.get_mode_display }}{% if s.location %} · {% if s.location|slice:":4" == "http" %}<a href="{{ s.location }}" target="_blank" rel="noopener noreferrer nofollow" style="color:var(--primary)" class="font-semibold">Join link</a>{% else %}{{ s.location }}{% endif %}{% endif %}</p>{% if s.notes %}<p class="mt-1 text-sm muted">{{ s.notes }}</p>{% endif %}</div>
+      {% if s.created_by_id == user.id or owner %}<form method="post" action="{% url 'circles:session_delete' s.pk %}">{% csrf_token %}<button class="act" aria-label="Cancel session">✕</button></form>{% endif %}</div>
+  {% empty %}<div class="card p-8 text-center"><p class="font-semibold">No sessions scheduled</p><p class="mt-1 text-sm muted">Pick a time that works for everyone.</p></div>{% endfor %}</div>
+  {% if past %}<h2 class="mt-6 text-lg font-bold">Recent</h2><div class="mt-3 space-y-2 opacity-70">{% for s in past %}<p class="card p-3 text-sm"><b>{{ s.title }}</b> · {{ s.starts_at|date:"j M, g:i A" }}</p>{% endfor %}</div>{% endif %}
+
+{% elif tab == "resources" %}
+  <details class="card mt-4 p-4"><summary class="flex items-center gap-2 font-semibold">{% include "components/icon.html" with name="link" %}Share a resource</summary>
+    <form method="post" action="{% url 'circles:resource_new' c.pk %}" class="mt-4 grid gap-3">{% csrf_token %}{{ resource_form.title }}{{ resource_form.url }}{{ resource_form.note }}<button class="btn btn-primary">Share</button></form></details>
+  <div class="mt-4 space-y-3">{% for r in resources %}
+    <div class="card flex items-center gap-3 p-4"><span class="icon-tile t-cyan !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="link" %}</span>
+      <div class="min-w-0 flex-1"><a href="{{ r.url }}" target="_blank" rel="noopener noreferrer nofollow" class="block truncate font-semibold hover:underline">{{ r.title }}</a><p class="truncate text-xs muted">{{ r.note|default:r.url }} · added by {{ r.added_by.first_name }}</p></div>
+      {% if r.added_by_id == user.id or owner %}<form method="post" action="{% url 'circles:resource_delete' r.pk %}">{% csrf_token %}<button class="act" aria-label="Remove">✕</button></form>{% endif %}</div>
+  {% empty %}<div class="card p-10 text-center"><p class="font-semibold">No resources yet</p><p class="mt-1 text-sm muted">Share notes, videos or docs with the group.</p></div>{% endfor %}</div>
+
+{% else %}
+  {% if owner %}
+  <div class="card mt-4 p-4"><p class="font-semibold">Invite from your connections</p>
+    {% if candidates %}<form method="post" action="{% url 'circles:invite' c.pk %}" class="mt-3 flex gap-2">{% csrf_token %}<select name="user" aria-label="Person">{% for u in candidates %}<option value="{{ u.pk }}">{{ u.full_name }}</option>{% endfor %}</select><button class="btn btn-primary">{% include "components/icon.html" with name="mail" %}Invite</button></form>
+    {% else %}<p class="mt-1 text-sm muted">Everyone you're connected with is already here, or you have no connections yet. <a class="font-semibold" style="color:var(--primary)" href="{% url 'profiles:discover' %}">Find people</a></p>{% endif %}</div>
+  {% if pending %}<div class="card mt-4 p-4" style="border-left:4px solid var(--warn)"><p class="mb-2 font-semibold">Join requests</p>{% for pm in pending %}<div class="flex items-center gap-3 py-2">{% include "components/avatar.html" with u=pm.user %}<a href="{% url 'profiles:detail' pm.user.pk %}" class="flex-1 font-medium hover:underline">{{ pm.user.full_name }}</a>
+    <form method="post" action="{% url 'circles:member_action' c.pk pm.pk 'approve' %}">{% csrf_token %}<button class="btn btn-primary !py-1.5">Approve</button></form><form method="post" action="{% url 'circles:member_action' c.pk pm.pk 'reject' %}">{% csrf_token %}<button class="btn btn-secondary !py-1.5">Reject</button></form></div>{% endfor %}</div>{% endif %}
+  {% if invited %}<p class="mt-4 text-sm muted">Waiting for reply: {% for im in invited %}{{ im.user.full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+  {% endif %}
+  <div class="mt-4 space-y-2">{% for mm in roster %}
+    <div class="card flex items-center gap-3 p-3"><a href="{% url 'profiles:detail' mm.user.pk %}">{% include "components/avatar.html" with u=mm.user size="h-11 w-11" %}</a>
+      <div class="min-w-0 flex-1"><a href="{% url 'profiles:detail' mm.user.pk %}" class="font-semibold hover:underline">{{ mm.user.full_name }}</a><p class="text-xs muted">{{ mm.user.department|default:mm.user.get_role_display }}</p></div>
+      {% if mm.role == "owner" %}<span class="badge">Owner</span>{% elif owner %}<form method="post" action="{% url 'circles:member_action' c.pk mm.pk 'remove' %}" data-confirm="Remove this member?">{% csrf_token %}<button class="btn btn-ghost !py-1.5" style="color:var(--err-text)">Remove</button></form>{% endif %}</div>{% endfor %}</div>
+{% endif %}
+{% endif %}
+{% endblock %}

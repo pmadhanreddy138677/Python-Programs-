@@ -1,0 +1,8 @@
+{% extends "app_base.html" %}
+{% block title %}Edit post · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Edit post</h1>
+<form method="post" class="card mt-5 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% include "components/field.html" with field=form.title %}{% include "components/field.html" with field=form.body %}
+  <div class="flex gap-3"><button class="btn btn-primary">Save</button><a class="btn btn-secondary" href="{% url 'discussions:detail' post.pk %}">Cancel</a></div></form>
+{% endblock %}

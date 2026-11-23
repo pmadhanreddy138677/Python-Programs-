@@ -1,0 +1,12 @@
+{% extends "app_base.html" %}
+{% block title %}New group · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">New group chat</h1><p class="mt-1 muted">Pick at least two people from your connections.</p>
+<form method="post" class="card mt-5 max-w-xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% include "components/field.html" with field=form.name %}
+  <div><p class="label">Add people</p>
+    <div class="max-h-72 space-y-1 overflow-y-auto rounded-xl border p-2" style="border-color:var(--border)">{% for c in form.members %}<label class="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-[var(--surface-2)]">{{ c.tag }}<span class="text-sm font-medium">{{ c.choice_label }}</span></label>
+      {% empty %}<p class="p-4 text-sm muted">You have no connections yet.</p>{% endfor %}</div>
+    {% for e in form.members.errors %}<p class="field-error">{{ e }}</p>{% endfor %}</div>
+  <div class="flex gap-3"><button class="btn btn-primary">Create group</button><a href="{% url 'messaging:inbox' %}" class="btn btn-secondary">Cancel</a></div></form>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "app_base.html" %}
+{% block title %}Project Hub · circliq{% endblock %}
+{% block content %}
+<section class="hero hero-project flex flex-wrap items-center justify-between gap-4 p-6 sm:p-9">
+  <div class="relative z-10 max-w-xl"><h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Build Something Amazing Together.</h1>
+    <p class="mt-2 text-white/90">Discover ideas, find teammates, and turn projects into reality.</p></div>
+  <a href="{% url 'projects:create' %}" class="btn relative z-10 !bg-white !text-fuchsia-700">{% include "components/icon.html" with name="rocket" %}Post a project</a>
+</section>
+<form method="get" class="card mt-5 grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-6">
+  <input name="q" aria-label="Search" value="{{ q }}" class="input sm:col-span-2 lg:col-span-6" placeholder="Search projects, technologies…">
+  <select name="category" class="input" aria-label="Category"><option value="">Any category</option>{% for k, l in categories %}<option value="{{ k }}" {% if cat == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="status" class="input" aria-label="Status"><option value="">Any status</option>{% for k, l in statuses %}<option value="{{ k }}" {% if status == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="kind" class="input" aria-label="Post type"><option value="">Any type</option>{% for k, l in kinds %}<option value="{{ k }}" {% if kind == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <select name="skill" class="input" aria-label="Skill"><option value="">Any skill</option>{% for s in skills %}<option value="{{ s.pk }}" {% if skill == s.pk|stringformat:'s' %}selected{% endif %}>{{ s.name }}</option>{% endfor %}</select>
+  <select name="scope" class="input" aria-label="Show"><option value="">All projects</option><option value="mine" {% if scope == "mine" %}selected{% endif %}>My projects</option></select>
+  <div class="flex gap-2"><button class="btn btn-primary flex-1">Filter</button><a href="{% url 'projects:list' %}" class="btn btn-secondary">Reset</a></div>
+</form>
+<div class="mt-5 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+  {% for p in page %}{% include "components/project_card.html" %}
+  {% empty %}<div class="card col-span-full p-10 text-center"><span class="icon-tile t-violet">{% include "components/icon.html" with name="rocket" %}</span><p class="mt-3 text-lg font-semibold">No projects match</p><p class="mt-1 text-sm muted">Clear a filter, or start the project you wish existed.</p><a href="{% url 'projects:create' %}" class="btn btn-primary mt-4">Post a project</a></div>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+  {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}<span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Next →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

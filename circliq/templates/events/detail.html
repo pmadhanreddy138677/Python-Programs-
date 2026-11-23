@@ -1,0 +1,18 @@
+{% extends "app_base.html" %}
+{% block title %}{{ e.title }} · circliq{% endblock %}
+{% block content %}
+<a href="{% url 'events:list' %}" class="text-sm font-semibold muted hover:underline">← Events</a>
+<div class="card mt-3 overflow-hidden"><div class="cat cat-{{ e.category }} h-40 sm:h-52">{% if e.banner %}<img src="{{ e.banner.url }}" alt="" class="absolute inset-0 h-full w-full object-cover">{% endif %}</div>
+  <div class="p-5 sm:p-7"><div class="flex flex-wrap items-center gap-1.5"><span class="badge">{{ e.get_category_display }}</span>{% if e.is_official %}<span class="badge official">✓ Official event</span>{% else %}<span class="badge" style="background:var(--surface-2);color:var(--muted)">Student event</span>{% endif %}{% if past %}<span class="pill pill-closed">Ended</span>{% endif %}</div>
+    <h1 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">{{ e.title }}</h1>
+    <div class="mt-3 grid gap-2 text-sm sm:grid-cols-2"><p class="flex items-center gap-2"><span class="h-5 w-5 muted">{% include "components/icon.html" with name="calendar" %}</span>{{ e.start_at|date:"l, j F Y" }}</p><p class="flex items-center gap-2"><span class="h-5 w-5 muted">{% include "components/icon.html" with name="clock" %}</span>{{ e.start_at|date:"g:i A" }}{% if e.end_at %} – {{ e.end_at|date:"g:i A" }}{% endif %}</p><p class="flex items-center gap-2"><span class="h-5 w-5 muted">{% include "components/icon.html" with name="discover" %}</span>{{ e.venue }}</p><p class="flex items-center gap-2"><span class="h-5 w-5 muted">{% include "components/icon.html" with name="user" %}</span>Organised by <a href="{% url 'profiles:detail' e.organizer.pk %}" class="font-semibold hover:underline">{{ e.organizer.full_name }}</a></p></div>
+    <div class="mt-5 flex flex-wrap items-center gap-2">
+      {% if e.i_go %}<form method="post" action="{% url 'events:unregister' e.pk %}">{% csrf_token %}<button class="btn btn-secondary" style="color:var(--ok-text)">✓ You're going · Cancel</button></form>
+      {% elif past %}<span class="btn btn-ghost">Registration closed</span>
+      {% elif full %}<span class="btn btn-ghost">Event is full</span>
+      {% else %}<form method="post" action="{% url 'events:register' e.pk %}">{% csrf_token %}<button class="btn btn-primary">Register interest</button></form>{% endif %}
+      <form method="post" action="{% url 'events:save' e.pk %}">{% csrf_token %}<button class="btn btn-secondary">{% include "components/icon.html" with name="bookmark" %}{% if e.i_saved %}Saved{% else %}Save{% endif %}</button></form>
+      {% if can_edit %}<a href="{% url 'events:edit' e.pk %}" class="btn btn-ghost">Edit</a><form method="post" action="{% url 'events:delete' e.pk %}" data-confirm="Delete this event?">{% csrf_token %}<button class="btn btn-ghost" style="color:var(--err-text)">Delete</button></form>{% endif %}</div></div></div>
+<div class="mt-4 grid gap-4 md:grid-cols-3"><section class="card p-5 md:col-span-2"><h2 class="font-bold">About this event</h2><p class="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{{ e.description }}</p></section>
+  <section class="card h-fit p-5"><h2 class="font-bold">{{ e.going }} going{% if e.capacity %} · {{ e.capacity }} spots{% endif %}</h2>{% if attendees %}<div class="mt-3 stack">{% for a in attendees %}{% include "components/avatar.html" with u=a.user size="h-9 w-9" text="text-xs" %}{% endfor %}</div>{% else %}<p class="mt-2 text-sm muted">Be the first to register.</p>{% endif %}</section></div>
+{% endblock %}

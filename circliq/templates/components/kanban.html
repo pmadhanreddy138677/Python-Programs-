@@ -1,0 +1,7 @@
+{% comment %}columns (dict todo/doing/done), move_name, delete_name, manager (bool: can delete any){% endcomment %}
+<div class="grid gap-3 md:grid-cols-3">
+  {% include "components/kanban_col.html" with key="todo" label="To do" items=columns.todo %}
+  {% include "components/kanban_col.html" with key="doing" label="In progress" items=columns.doing %}
+  {% include "components/kanban_col.html" with key="done" label="Done" items=columns.done %}
+</div>
+<p class="mt-2 text-xs muted">Tip: drag cards between columns, or use the small buttons on each card.</p>

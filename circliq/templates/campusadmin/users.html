@@ -1,0 +1,22 @@
+{% extends "app_base.html" %}
+{% block title %}Users · Campus admin{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Users</h1><div class="mt-4">{% include "campusadmin/_nav.html" %}</div>
+<form method="get" class="flex flex-wrap gap-2"><input name="q" value="{{ q }}" class="input min-w-[220px] flex-1" placeholder="Search name or email…" aria-label="Search users">
+  <select name="role" class="input !w-auto" aria-label="Role"><option value="">Any role</option><option value="student" {% if role == "student" %}selected{% endif %}>Students</option><option value="faculty" {% if role == "faculty" %}selected{% endif %}>Faculty</option><option value="admin" {% if role == "admin" %}selected{% endif %}>Admins</option></select>
+  <select name="status" class="input !w-auto" aria-label="Status"><option value="">Any status</option><option value="pending" {% if status == "pending" %}selected{% endif %}>Faculty pending</option><option value="restricted" {% if status == "restricted" %}selected{% endif %}>Restricted</option><option value="unverified" {% if status == "unverified" %}selected{% endif %}>Unverified email</option></select><button class="btn btn-secondary">Filter</button></form>
+<div class="card mt-4 overflow-x-auto"><table class="w-full text-sm"><caption class="sr-only-text">Users on this campus</caption>
+  <thead><tr class="text-left text-xs uppercase muted"><th scope="col" class="p-3">Person</th><th scope="col" class="p-3">Role</th><th scope="col" class="p-3">Status</th><th scope="col" class="p-3">Joined</th><th scope="col" class="p-3">Actions</th></tr></thead>
+  <tbody>{% for u in page %}<tr class="border-t" style="border-color:var(--border)">
+    <td class="p-3"><div class="flex items-center gap-2">{% include "components/avatar.html" with u=u size="h-8 w-8" text="text-xs" %}<div class="min-w-0"><p class="font-semibold">{{ u.full_name }}</p><p class="text-xs muted">{{ u.email }}</p></div></div></td>
+    <td class="p-3">{{ u.get_role_display }}</td>
+    <td class="p-3">{% if u.is_restricted %}<span class="pill pill-closed">Restricted</span>{% elif u.role == "faculty" and not u.is_approved %}<span class="pill" style="background:rgba(245,158,11,.15);color:var(--warn-text)">Awaiting approval</span>{% elif not u.is_active %}<span class="pill pill-closed">Deactivated</span>{% elif not u.is_email_verified %}<span class="pill pill-closed">Unverified</span>{% else %}<span class="pill pill-open">Active</span>{% endif %}</td>
+    <td class="p-3 muted">{{ u.date_joined|date:"j M Y" }}</td>
+    <td class="p-3"><div class="flex flex-wrap items-center gap-1">
+      {% if u.role == "faculty" and not u.is_approved and not u.is_restricted %}<form method="post" action="{% url 'campusadmin:user_action' u.pk 'approve' %}">{% csrf_token %}<button class="btn btn-primary !px-3 !py-1 text-xs">Approve</button></form><form method="post" action="{% url 'campusadmin:user_action' u.pk 'reject' %}" data-confirm="Decline this faculty account?">{% csrf_token %}<button class="btn btn-secondary !px-3 !py-1 text-xs">Decline</button></form>{% endif %}
+      {% if u.is_restricted %}<form method="post" action="{% url 'campusadmin:user_action' u.pk 'unrestrict' %}">{% csrf_token %}<button class="btn btn-secondary !px-3 !py-1 text-xs">Lift restriction</button></form>
+      {% elif u.role != "admin" and not u.is_superuser and u.pk != user.pk %}<form method="post" action="{% url 'campusadmin:user_action' u.pk 'restrict' %}" class="flex gap-1" data-confirm="Restrict this account?">{% csrf_token %}<input name="reason" placeholder="Reason" maxlength="200" aria-label="Reason for restriction" class="!w-28 !py-1 text-xs"><button class="btn btn-ghost !px-2 !py-1 text-xs" style="color:var(--err-text)">Restrict</button></form>{% endif %}
+    </div></td></tr>
+  {% empty %}<tr><td colspan="5" class="p-8 text-center muted">No users match.</td></tr>{% endfor %}</tbody></table></div>
+{% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pages">{% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}<span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Next →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

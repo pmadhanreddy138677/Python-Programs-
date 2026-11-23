@@ -1,0 +1,17 @@
+{% extends "app_base.html" %}
+{% block title %}Settings · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Settings &amp; privacy</h1>
+<div class="mt-5 grid max-w-3xl gap-4">
+  <section class="card p-5"><h2 class="font-bold">Your account</h2><p class="mt-1 text-sm muted">{{ user.full_name }} · {{ user.email }} · {{ user.get_role_display }}{% if user.institution %} · {{ user.institution.name }}{% endif %}</p>
+    <div class="mt-3 flex flex-wrap gap-2"><a href="{% url 'profiles:edit' %}" class="btn btn-secondary !py-2">Edit profile &amp; privacy options</a><a href="{% url 'accounts:password_change' %}" class="btn btn-secondary !py-2">Change password</a><a href="{% url 'connections:list' %}?tab=blocked" class="btn btn-secondary !py-2">Blocked people</a></div></section>
+  <section class="card p-5"><h2 class="font-bold">Your data</h2><p class="mt-1 text-sm muted">Download a copy of what you've shared on Circliq: profile, posts, answers and memberships. Private messages and other people's details are not included.</p>
+    <a href="{% url 'accounts:export' %}" class="btn btn-secondary mt-3 !py-2">Download my data (JSON)</a></section>
+  <section class="card p-5"><h2 class="font-bold">Deactivate account</h2><p class="mt-1 text-sm muted">Hides your profile and stops you appearing anywhere. Nothing is deleted, and you can reactivate any time from the login page.</p>
+    <form method="post" action="{% url 'accounts:deactivate' %}" class="mt-3 flex flex-wrap gap-2" data-confirm="Deactivate your account?">{% csrf_token %}<input type="password" name="password" placeholder="Your password" required autocomplete="current-password" aria-label="Password" class="max-w-xs"><button class="btn btn-secondary !py-2">Deactivate</button></form></section>
+  {% if can_delete %}<section class="card p-5" style="border-color:var(--err-strong)"><h2 class="font-bold" style="color:var(--err-text)">Delete account permanently</h2><p class="mt-1 text-sm muted">Removes your profile, posts, comments, questions, answers and messages you sent. This cannot be undone. If you run a circle or project that others depend on, hand it over first.</p>
+    <form method="post" action="{% url 'accounts:delete' %}" class="mt-3 grid max-w-sm gap-2" data-confirm="Permanently delete your account and everything you shared? This cannot be undone.">{% csrf_token %}
+      <input type="password" name="password" placeholder="Your password" required autocomplete="current-password" aria-label="Password"><input name="confirm" placeholder="Type DELETE to confirm" required aria-label="Type DELETE to confirm" autocomplete="off"><button class="btn btn-primary !py-2" style="background:var(--err-strong)">Delete my account</button></form></section>{% endif %}
+  <section class="card p-5"><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="btn btn-secondary !py-2">Log out</button></form></section>
+</div>
+{% endblock %}

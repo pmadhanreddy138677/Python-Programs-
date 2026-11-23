@@ -1,0 +1,10 @@
+{% extends "app_base.html" %}
+{% block title %}Communities · Campus admin{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Official communities</h1><p class="mt-1 muted">Only administrators can grant the Official badge.</p><div class="mt-4">{% include "campusadmin/_nav.html" %}</div>
+<div class="card overflow-x-auto"><table class="w-full text-sm"><caption class="sr-only-text">Communities and their official status</caption>
+  <thead><tr class="text-left text-xs uppercase muted"><th scope="col" class="p-3">Community</th><th scope="col" class="p-3">Type</th><th scope="col" class="p-3">Members</th><th scope="col" class="p-3">Official</th></tr></thead>
+  <tbody>{% for c in communities %}<tr class="border-t" style="border-color:var(--border)"><td class="p-3"><a class="font-semibold hover:underline" href="{% url 'communities:detail' c.pk %}">{{ c.name }}</a><p class="text-xs muted">{{ c.get_category_display }}</p></td><td class="p-3">{{ c.get_visibility_display }}</td><td class="p-3">{{ c.members }}</td>
+    <td class="p-3"><form method="post" action="{% url 'campusadmin:official' c.pk %}">{% csrf_token %}{% if c.is_official %}<button class="btn btn-secondary !px-3 !py-1 text-xs">✓ Official · Remove</button>{% else %}<button class="btn btn-primary !px-3 !py-1 text-xs">Mark official</button>{% endif %}</form></td></tr>
+  {% empty %}<tr><td colspan="4" class="p-8 text-center muted">No communities yet.</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}

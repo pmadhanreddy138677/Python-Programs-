@@ -1,0 +1,24 @@
+{% extends "app_base.html" %}
+{% block title %}Circles · circliq{% endblock %}
+{% block content %}
+<section class="hero hero-circle flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
+  <div class="relative z-10"><h1 class="text-3xl font-extrabold tracking-tight">Circles</h1><p class="mt-1 max-w-lg text-white/90">Small groups around a shared goal, from Python beginners to weekend cricket. More personal than a big community.</p></div>
+  <a href="{% url 'circles:create' %}" class="btn relative z-10 !bg-white !text-indigo-700">{% include "components/icon.html" with name="plus" %}Create a Circle</a>
+</section>
+<div class="mt-5 flex flex-wrap items-center gap-2">
+  <a class="tab {% if tab == 'discover' %}active{% endif %}" href="?tab=discover">Discover</a>
+  <a class="tab {% if tab == 'mine' %}active{% endif %}" href="?tab=mine">My Circles</a>
+  <a class="tab {% if tab == 'invites' %}active{% endif %}" href="?tab=invites">Invitations{% if invite_count %} <span class="badge" style="background:var(--primary-strong);color:#fff">{{ invite_count }}</span>{% endif %}</a>
+</div>
+<form method="get" class="mt-4 flex flex-wrap gap-2"><input type="hidden" name="tab" value="{{ tab }}">
+  <input name="q" aria-label="Search" value="{{ q }}" class="input min-w-[220px] flex-1" placeholder="Search circles…">
+  <select name="category" class="input !w-auto" data-autosubmit aria-label="Category"><option value="">All categories</option>{% for k, l in categories %}<option value="{{ k }}" {% if cat == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+  <button class="btn btn-secondary">Search</button></form>
+<div class="mt-5 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+  {% for c in page %}{% include "components/circle_card.html" %}
+  {% empty %}<div class="card col-span-full p-10 text-center"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="circles" %}</span><p class="mt-3 text-lg font-semibold">{% if tab == "invites" %}No invitations{% elif tab == "mine" %}You haven't joined a circle yet{% else %}No circles found{% endif %}</p><p class="mt-1 text-sm muted">Start one around something you care about.</p><a href="{% url 'circles:create' %}" class="btn btn-primary mt-4">Create a Circle</a></div>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+  {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}<span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Next →</a>{% endif %}</nav>{% endif %}
+{% endblock %}

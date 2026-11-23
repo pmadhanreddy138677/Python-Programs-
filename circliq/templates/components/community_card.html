@@ -1,0 +1,17 @@
+<article class="card card-hover glow flex flex-col overflow-hidden">
+  <div class="cat cat-{{ c.category }} h-20">{% if c.banner %}<img src="{{ c.banner.url }}" alt="" class="absolute inset-0 h-full w-full object-cover">{% endif %}</div>
+  <div class="relative z-10 -mt-7 flex flex-1 flex-col px-5 pb-5">
+    <a href="{% url 'communities:detail' c.pk %}">{% if c.icon %}<img src="{{ c.icon.url }}" alt="" class="c-icon h-14 w-14">{% else %}<span class="c-icon h-14 w-14 text-xl">{{ c.name|slice:":1"|upper }}</span>{% endif %}</a>
+    <a href="{% url 'communities:detail' c.pk %}" class="mt-2 font-semibold hover:underline">{{ c.name }}</a>
+    <div class="mt-1 flex flex-wrap gap-1">
+      {% if c.is_official %}<span class="badge official">✓ Official</span>{% endif %}
+      <span class="badge">{{ c.get_category_display }}</span>
+      <span class="badge" style="background:var(--surface-2);color:var(--muted)">{% if c.is_private %}🔒 Private{% else %}Public{% endif %}</span>
+    </div>
+    <p class="mt-2 line-clamp-2 text-sm muted">{{ c.description }}</p>
+    <div class="mt-auto flex items-center justify-between pt-4">
+      <span class="text-xs muted">{{ c.member_count }} member{{ c.member_count|pluralize }}</span>
+      {% include "components/join_button.html" with next=request.get_full_path %}
+    </div>
+  </div>
+</article>

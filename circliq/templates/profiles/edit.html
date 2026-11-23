@@ -1,0 +1,24 @@
+{% extends "app_base.html" %}
+{% block title %}Edit profile · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Edit profile</h1>
+<form method="post" enctype="multipart/form-data" class="mt-5 max-w-2xl space-y-5" novalidate>
+  {% csrf_token %}
+  <div class="card space-y-4 p-5">
+    {% include "components/field.html" with field=form.full_name %}
+    {% include "components/field.html" with field=form.avatar %}
+    {% include "components/field.html" with field=form.bio %}
+    {% include "components/field.html" with field=form.department %}
+    <div class="grid grid-cols-2 gap-3">{% include "components/field.html" with field=form.program %}{% include "components/field.html" with field=form.academic_year %}</div>
+  </div>
+  <div class="card p-5"><p class="label">Interests</p>{% include "components/chip_group.html" with field=form.interests %}<p class="label mt-4">Skills</p>{% include "components/chip_group.html" with field=form.skills %}</div>
+  <div class="card p-5"><p class="label">What are you looking for?</p>{% include "components/chip_group.html" with field=form.goals %}</div>
+  <div class="card space-y-4 p-5"><div><h2 class="font-bold">Campus Match</h2><p class="text-xs muted">Optional. These help us suggest friends, study partners and teammates. We only use what you enter here.</p></div>
+    {% include "components/field.html" with field=form.study_subjects %}
+    <div><p class="label">When are you usually free?</p>{% include "components/chip_group.html" with field=form.availability %}</div>
+    <div><p class="label">How do you like to collaborate?</p>{% include "components/chip_group.html" with field=form.collab_preferences %}</div>
+    <label class="flex items-start gap-3">{{ form.match_enabled }}<span><b class="text-sm">Take part in Campus Match</b><br><span class="text-xs muted">Turn off to stop appearing in matches and to hide match suggestions for you.</span></span></label></div>
+  <div class="card p-5"><label class="flex items-start gap-3">{{ form.is_discoverable }}<span><b class="text-sm">Let students discover me</b><br><span class="text-xs muted">When off, you won't appear in Discover or suggestions, and people can't send you new requests.</span></span></label></div>
+  <div class="flex gap-3"><button class="btn btn-primary">Save changes</button><a href="{% url 'profiles:me' %}" class="btn btn-secondary">Cancel</a></div>
+</form>
+{% endblock %}

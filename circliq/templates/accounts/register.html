@@ -1,0 +1,27 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Join · circliq{% endblock %}
+{% block form_area %}
+<h2 class="text-3xl font-bold">Join circliq</h2>
+{% if no_institution %}
+  <p class="mt-3 field-error">No institution is configured yet. An administrator needs to add one in the admin site.</p>
+{% else %}
+<p class="mt-1 muted">Creating an account for {{ institution.name }}.</p>
+<form method="post" class="mt-6 space-y-4" novalidate>
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  {% include "components/field.html" with field=form.full_name %}
+  {% include "components/field.html" with field=form.email %}
+  {% include "components/field.html" with field=form.account_type %}
+  {% include "components/field.html" with field=form.department %}
+  <div class="grid grid-cols-2 gap-3">
+    {% include "components/field.html" with field=form.program %}
+    {% include "components/field.html" with field=form.academic_year %}
+  </div>
+  {% include "components/field.html" with field=form.password1 %}
+  {% include "components/field.html" with field=form.password2 %}
+  <button class="btn btn-primary w-full !py-3">Create account</button>
+</form>
+<p class="mt-4 text-sm muted">Faculty accounts are reviewed by an administrator before they are activated.</p>
+<p class="mt-2 text-sm muted">Already have an account? <a class="font-semibold" style="color:var(--primary)" href="{% url 'accounts:login' %}">Log in</a></p>
+{% endif %}
+{% endblock %}

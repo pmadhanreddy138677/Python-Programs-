@@ -1,0 +1,8 @@
+<div class="flex items-center justify-between border-b px-4 py-3" style="border-color:var(--border)"><p class="font-bold">Notifications</p>
+  <form method="post" action="{% url 'notifications:mark_all' %}" data-markall>{% csrf_token %}<button class="text-xs font-semibold" style="color:var(--primary)">Mark all read</button></form></div>
+<div class="max-h-96 overflow-y-auto">
+  {% for n in items %}<a href="{% url 'notifications:open' n.pk %}" class="notif-item {% if not n.is_read %}unread{% endif %}">{% include "notifications/_icon.html" %}
+    <div class="min-w-0 flex-1"><p class="text-sm font-semibold leading-snug">{{ n.title }}</p>{% if n.body %}<p class="truncate text-xs muted">{{ n.body }}</p>{% endif %}<p class="mt-0.5 text-[11px] muted">{{ n.created_at|timesince }} ago</p></div>{% if not n.is_read %}<span class="udot"></span>{% endif %}</a>
+  {% empty %}<p class="p-8 text-center text-sm muted">You're all caught up.</p>{% endfor %}
+</div>
+<a href="{% url 'notifications:list' %}" class="block border-t p-3 text-center text-sm font-semibold" style="border-color:var(--border);color:var(--primary)">View all</a>

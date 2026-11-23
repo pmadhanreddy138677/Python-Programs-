@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Welcome · circliq{% endblock %}
+{% block body %}
+<div class="mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-8">
+  <div class="mb-6 flex items-center justify-between">{% include "components/logo.html" %}{% include "components/theme_toggle.html" %}</div>
+  <div class="mb-6 flex gap-2" role="progressbar" aria-valuenow="{{ step }}" aria-valuemin="1" aria-valuemax="5">{% for s in steps %}<div class="step-dot {% if s <= step %}done{% endif %}"></div>{% endfor %}</div>
+  <p class="text-sm font-semibold muted">Step {{ step }} of 5</p>
+  <h1 class="mt-1 text-3xl font-extrabold tracking-tight">{{ title }}</h1>
+
+  <form method="post" enctype="multipart/form-data" class="fade-in mt-6 flex-1" novalidate>
+    {% csrf_token %}
+    {% if step == 1 %}
+      <p class="mb-4 muted">Add a photo and a short bio so people know who you are.</p>
+      <div class="card space-y-4 p-5">{% include "components/field.html" with field=form.avatar %}{% include "components/field.html" with field=form.bio %}</div>
+    {% elif step == 2 %}
+      <div class="card p-5"><p class="label">Interests</p>{% include "components/chip_group.html" with field=form.interests %}<p class="label mt-5">Skills you have</p>{% include "components/chip_group.html" with field=form.skills %}</div>
+    {% elif step == 3 %}
+      <div class="grid gap-3 sm:grid-cols-2">{% for c in form.goals %}<label class="chip chip-lg">{{ c.tag }}<span>{{ c.choice_label }}</span></label>{% endfor %}</div>
+    {% elif step == 4 %}
+      <p class="mb-4 muted">Communities matched to your interests. Join a few to fill your feed. You can always change this later.</p>
+      <div class="grid gap-3 sm:grid-cols-2">{% for c in communities %}
+        <div class="card flex items-center gap-3 p-4"><span class="c-icon h-12 w-12 shrink-0 text-lg">{{ c.name|slice:":1" }}</span>
+          <div class="min-w-0 flex-1"><p class="truncate font-semibold">{{ c.name }}</p><p class="truncate text-xs muted">{{ c.reason }} · {{ c.member_count }} member{{ c.member_count|pluralize }}</p></div>
+          {% if c.state == "member" %}<span class="badge" style="background:var(--ok-strong);color:#fff">✓ Joined</span>{% else %}<button name="join" value="{{ c.pk }}" class="btn btn-secondary !py-1.5">Join</button>{% endif %}</div>
+      {% empty %}<p class="muted sm:col-span-2">No matches yet. Browse all communities after setup.</p>{% endfor %}</div>
+    {% else %}
+      <div class="banner p-8 text-center"><p class="relative z-10 text-xl font-bold">You're all set, {{ user.first_name }}!</p><p class="relative z-10 mt-1 text-white/85">Here are a few people you might want to meet.</p></div>
+      <div class="mt-4 space-y-3">{% for r in suggested %}{% include "components/person_card.html" with r=r next=request.path %}{% empty %}<p class="text-sm muted">No suggestions yet. Explore the campus to find your people.</p>{% endfor %}</div>
+    {% endif %}
+    <div class="mt-8 flex flex-wrap items-center justify-between gap-3">
+      {% if step > 1 and step < 5 %}<a href="{% url 'profiles:onboarding' step|add:'-1' %}" class="btn btn-ghost">← Back</a>{% else %}<span></span>{% endif %}
+      <div class="flex gap-2">
+        {% if step < 5 %}<button name="skip" value="1" class="btn btn-ghost">Skip for now</button><button class="btn btn-primary">Continue</button>
+        {% else %}<button class="btn btn-primary !px-6 !py-3">Explore My Campus</button>{% endif %}
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

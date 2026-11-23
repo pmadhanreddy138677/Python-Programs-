@@ -1,0 +1,89 @@
+{% extends "app_base.html" %}
+{% block title %}Home · circliq{% endblock %}
+{% block content %}
+<section class="banner p-6 sm:p-8">
+  <h1 class="relative z-10 text-3xl font-extrabold tracking-tight sm:text-4xl">{{ greeting }}, {{ user.first_name }}!</h1>
+  <p class="relative z-10 mt-1 text-white/85">Ready to discover what's happening around your campus?</p>
+  <div class="relative z-10 mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+    <span class="rounded-full bg-white/20 px-3 py-1">{{ user.get_role_display }}</span>
+    {% if user.institution %}<span class="rounded-full bg-white/20 px-3 py-1">{{ user.institution.name }}</span>{% endif %}
+  </div>
+</section>
+
+{% if user.is_faculty and not user.is_approved %}
+<div class="card mt-4 p-4" style="border-left:4px solid var(--warn)"><p class="font-semibold">Faculty approval pending</p><p class="text-sm muted">An administrator needs to approve your faculty account before faculty features are enabled.</p></div>
+{% endif %}
+
+<section class="mt-4 grid grid-cols-3 gap-3" aria-label="Your stats">
+  <a href="{% url 'connections:list' %}" class="card card-hover stat"><b data-count-up="{{ connection_count }}">{{ connection_count }}</b><span class="text-xs muted">Connections</span></a>
+  <a href="{% url 'connections:list' %}?tab=received" class="card card-hover stat"><b data-count-up="{{ pending_requests_count|default:0 }}">{{ pending_requests_count|default:0 }}</b><span class="text-xs muted">Requests</span></a>
+  <a href="{% url 'profiles:edit' %}" class="card card-hover stat"><b data-count-up="{{ completeness }}" data-suffix="%">{{ completeness }}%</b><span class="text-xs muted">Profile complete</span></a>
+</section>
+
+<section class="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Quick actions">
+  <a href="{% url 'profiles:discover' %}" class="card card-hover glow block p-5"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="users" %}</span><p class="mt-3 font-semibold">Find Your People</p><p class="mt-1 text-sm muted">Meet students who share your interests.</p><p class="mt-3 text-sm font-semibold" style="color:var(--primary)">Discover Students →</p></a>
+  <a href="{% url 'study:list' %}" class="card card-hover glow block p-5"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="book" %}</span><p class="mt-3 font-semibold">Study Together</p><p class="mt-1 text-sm muted">Find study partners and learning groups.</p><p class="mt-3 text-sm font-semibold" style="color:var(--primary)">Find Partners →</p></a>
+  <a href="{% url 'projects:list' %}" class="card card-hover glow block p-5"><span class="icon-tile t-amber">{% include "components/icon.html" with name="code" %}</span><p class="mt-3 font-semibold">Build Together</p><p class="mt-1 text-sm muted">Discover projects and find teammates.</p><p class="mt-3 text-sm font-semibold" style="color:var(--primary)">Explore Projects →</p></a>
+  <a href="{% url 'communities:list' %}" class="card card-hover glow block p-5"><span class="icon-tile t-violet">{% include "components/icon.html" with name="circles" %}</span><p class="mt-3 font-semibold">Explore Communities</p><p class="mt-1 text-sm muted">Find groups where you belong.</p><p class="mt-3 text-sm font-semibold" style="color:var(--primary)">Explore Communities →</p></a>
+</section>
+
+{% if nudges %}<div class="mt-5 space-y-2">{% for title, text, url in nudges %}<a href="{{ url }}" class="nudge"><span class="icon-tile t-amber !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="sparkle" %}</span><div class="flex-1"><p class="text-sm font-bold">{{ title }}</p><p class="text-xs muted">{{ text }}</p></div><span class="text-sm font-semibold" style="color:var(--primary)">Do it →</span></a>{% endfor %}</div>{% endif %}
+
+{% if picks %}<section class="mt-8"><div class="mb-1 flex items-center justify-between"><h2 class="text-xl font-bold">Picks for you</h2><a href="{% url 'recommendations:match' %}" class="text-sm font-semibold" style="color:var(--primary)">Campus Match →</a></div>
+  <p class="mb-2 text-xs muted">Based on interests, skills and goals you added. Every pick says why.</p>
+  <div class="picks">{% for p in picks %}{% include "components/pick_card.html" %}{% endfor %}</div></section>{% endif %}
+
+<section class="mt-6">
+  <h2 class="mb-3 text-xl font-bold">Campus feed</h2>
+  {% if has_communities %}{% include "components/composer.html" with next=request.get_full_path %}
+  {% else %}<div class="card p-5"><p class="font-semibold">Join a community to start posting</p><p class="mt-1 text-sm muted">Your feed fills up with discussions from communities you join.</p><a href="{% url 'communities:list' %}" class="btn btn-primary mt-3 !py-2">Find communities</a></div>{% endif %}
+  <div class="-mx-1 mt-4 flex gap-1 overflow-x-auto px-1">{% for key, label in feeds %}<a class="tab whitespace-nowrap {% if feed == key %}active{% endif %}" href="?feed={{ key }}">{{ label }}</a>{% endfor %}</div>
+  <div class="mt-4 space-y-4">
+    {% for p in page %}{% include "components/post_card.html" %}
+    {% empty %}<div class="card p-10 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="sparkle" %}</span><p class="mt-3 text-lg font-semibold">Nothing here yet</p><p class="mt-1 text-sm muted">Join communities and start a discussion to bring your feed to life.</p></div>{% endfor %}
+  </div>
+  {% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">
+    {% if page.has_previous %}<a class="btn btn-secondary" href="?feed={{ feed }}&page={{ page.previous_page_number }}">← Newer</a>{% endif %}
+    <span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+    {% if page.has_next %}<a class="btn btn-secondary" href="?feed={{ feed }}&page={{ page.next_page_number }}">Older →</a>{% endif %}</nav>{% endif %}
+</section>
+{% endblock %}
+{% block rail %}
+<aside class="hidden w-80 shrink-0 space-y-4 p-4 xl:block">
+  <div class="card p-4">
+    <p class="mb-3 font-semibold">Suggested connections</p>
+    {% for r in suggested %}
+    <div class="mb-4 last:mb-0">
+      <div class="flex items-center gap-3">{% include "components/avatar.html" with u=r.user %}<div class="min-w-0"><a href="{% url 'profiles:detail' r.user.pk %}" class="block truncate text-sm font-semibold hover:underline">{{ r.user.full_name }}</a><p class="truncate text-xs muted">{{ r.why|default:"On Circliq" }}</p></div></div>
+      <div class="mt-2 flex gap-2">{% include "components/connect_button.html" with other=r.user rel=r.rel conn=r.conn next=request.get_full_path %}</div>
+    </div>
+    {% empty %}<p class="text-sm muted">Add interests and goals to your profile to see suggestions.</p>{% endfor %}
+  </div>
+  <div class="card p-4">
+    <p class="mb-3 font-semibold">Recommended communities</p>
+    {% for c in recommended %}
+    <div class="mb-4 last:mb-0 flex items-center gap-3">
+      <span class="c-icon h-11 w-11 shrink-0 text-lg">{{ c.name|slice:":1" }}</span>
+      <div class="min-w-0 flex-1"><a href="{% url 'communities:detail' c.pk %}" class="block truncate text-sm font-semibold hover:underline">{{ c.name }}</a><p class="truncate text-xs muted">{{ c.reason }}</p></div>
+      {% include "components/join_button.html" with next=request.get_full_path %}
+    </div>
+    {% empty %}<p class="text-sm muted">Add interests to your profile for community suggestions.</p>{% endfor %}
+  </div>
+  <div class="card p-4">
+    <p class="mb-3 font-semibold">Your next sessions</p>
+    {% for s in sessions %}<a href="{% url 'circles:detail' s.circle_id %}?tab=sessions" class="mb-3 flex items-center gap-3 last:mb-0"><div class="date-tile !h-12 !w-12"><b class="!text-base">{{ s.starts_at|date:"j" }}</b><small>{{ s.starts_at|date:"M" }}</small></div><div class="min-w-0"><p class="truncate text-sm font-semibold">{{ s.title }}</p><p class="truncate text-xs muted">{{ s.circle.name }} · {{ s.starts_at|date:"g:i A" }}</p></div></a>
+    {% empty %}<p class="text-sm muted">No sessions yet. Join a <a class="font-semibold" style="color:var(--primary)" href="{% url 'study:list' %}">study group</a>.</p>{% endfor %}
+  </div>
+  <div class="card p-4">
+    <p class="mb-3 font-semibold">Projects that need your skills</p>
+    {% for p in projects_rec %}<a href="{% url 'projects:detail' p.pk %}" class="mb-3 block last:mb-0"><p class="truncate text-sm font-semibold hover:underline">{{ p.title }}</p><p class="text-xs muted">{{ p.match_text }} · {{ p.member_count }}/{{ p.team_size }} members</p></a>
+    {% empty %}<p class="text-sm muted">Add skills to your profile to see matching projects.</p>{% endfor %}
+  </div>
+  <div class="card p-4">
+    <p class="mb-3 font-semibold">Upcoming events</p>
+    {% for e in events %}<a href="{% url 'events:detail' e.pk %}" class="mb-3 flex items-center gap-3 last:mb-0"><div class="date-tile !h-12 !w-12"><b class="!text-base">{{ e.start_at|date:"j" }}</b><small>{{ e.start_at|date:"M" }}</small></div><div class="min-w-0"><p class="truncate text-sm font-semibold">{{ e.title }}</p><p class="truncate text-xs muted">{{ e.venue }} · {{ e.start_at|date:"g:i A" }}</p></div></a>
+    {% empty %}<p class="text-sm muted">Nothing scheduled. <a class="font-semibold" style="color:var(--primary)" href="{% url 'events:create' %}">Publish an event</a></p>{% endfor %}
+  </div>
+  {% if announcements %}<div class="card p-4"><p class="mb-3 font-semibold">Announcements</p>{% for a in announcements %}<a href="{% url 'faculty:announcements' %}" class="mb-3 block last:mb-0"><p class="truncate text-sm font-semibold hover:underline">{{ a.title }}</p><p class="text-xs muted">{{ a.author.full_name }} · {{ a.created_at|timesince }} ago</p></a>{% endfor %}</div>{% endif %}
+</aside>
+{% endblock %}

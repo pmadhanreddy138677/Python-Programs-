@@ -1,0 +1,21 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}Log in · circliq{% endblock %}
+{% block form_area %}
+<h2 class="text-3xl font-bold">Welcome back</h2>
+<p class="mt-1 muted">Log in to your campus community.</p>
+<form method="post" class="mt-6 space-y-4" novalidate>
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error rounded-lg p-3" style="background:rgba(239,68,68,.08)">{{ e }}</p>{% endfor %}
+  {% include "components/field.html" with field=form.username %}
+  {% include "components/field.html" with field=form.password %}
+  <div class="flex items-center justify-between text-sm">
+    <label class="inline-flex items-center gap-2">{{ form.remember_me }} Remember me</label>
+    <a href="{% url 'accounts:password_reset' %}" class="font-semibold" style="color:var(--primary)">Forgot password?</a>
+  </div>
+  <input type="hidden" name="next" value="{{ next }}">
+  <button class="btn btn-primary w-full !py-3">Log in</button>
+</form>
+<p class="mt-4 text-sm muted">Didn't get a verification email? <a class="font-semibold" style="color:var(--primary)" href="{% url 'accounts:resend_verification' %}">Resend it</a></p>
+<p class="mt-2 text-sm muted">Deactivated your account? <a class="font-semibold" style="color:var(--primary)" href="{% url 'accounts:reactivate' %}">Reactivate it</a></p>
+<p class="mt-2 text-sm muted">New here? <a class="font-semibold" style="color:var(--primary)" href="{% url 'accounts:register' %}">Create an account</a></p>
+{% endblock %}

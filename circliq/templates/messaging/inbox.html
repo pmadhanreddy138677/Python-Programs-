@@ -1,0 +1,49 @@
+{% extends "app_base.html" %}
+{% block title %}Messages · circliq{% endblock %}
+{% block content %}
+<div class="chat-shell grid gap-4 lg:grid-cols-[320px_1fr]">
+  <aside class="card {% if active %}hidden lg:flex{% else %}flex{% endif %} min-h-0 flex-col overflow-hidden">
+    <div class="flex items-center justify-between p-4"><h1 class="text-xl font-extrabold tracking-tight">Messages</h1>
+      <a href="{% url 'messaging:new_group' %}" class="btn btn-secondary !px-3 !py-1.5 text-xs">{% include "components/icon.html" with name="plus" %}Group</a></div>
+    <div class="min-h-0 flex-1 space-y-1 overflow-y-auto px-2 pb-3">
+      {% for r in rows %}
+      <a href="{% url 'messaging:chat' r.conversation_id %}" class="convo {% if active and active.pk == r.conversation_id %}active{% endif %}">
+        {% if r.conversation.kind == "group" %}<span class="icon-tile t-violet !h-11 !w-11 !rounded-full">{% include "components/icon.html" with name="users" %}</span>{% else %}{% include "components/avatar.html" with u=r.other size="h-11 w-11" %}{% endif %}
+        <div class="min-w-0 flex-1"><div class="flex items-center justify-between gap-2"><p class="truncate font-semibold {% if r.unread %}text-main{% endif %}">{{ r.title }}</p><span class="shrink-0 text-[11px] muted">{{ r.conversation.last_message_at|timesince }}</span></div>
+          <div class="flex items-center justify-between gap-2"><p class="truncate text-sm {% if r.unread %}font-semibold{% else %}muted{% endif %}">{% if r.last_body %}{% if r.conversation.kind == "group" %}{{ r.last_sender|default:"" }}: {% endif %}{{ r.last_body }}{% else %}No messages yet{% endif %}</p>
+            {% if r.unread %}<span class="badge shrink-0" style="background:var(--primary-strong);color:#fff">{{ r.unread }}</span>{% endif %}</div></div></a>
+      {% empty %}<div class="p-8 text-center"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="chat" %}</span><p class="mt-3 font-semibold">No conversations yet</p><p class="mt-1 text-sm muted">Open a connection's profile and press Message, or start a group.</p><a href="{% url 'connections:list' %}" class="btn btn-primary mt-4 !py-2">Your connections</a></div>{% endfor %}
+    </div>
+  </aside>
+
+  <section class="card {% if active %}flex{% else %}hidden lg:flex{% endif %} min-h-0 flex-col overflow-hidden">
+  {% if active %}
+    <header class="flex items-center gap-3 border-b p-3" style="border-color:var(--border)">
+      <a href="{% url 'messaging:inbox' %}" class="btn btn-ghost !p-2 lg:hidden" aria-label="Back">←</a>
+      {% if active.kind == "group" %}<span class="icon-tile t-violet !h-10 !w-10 !rounded-full">{% include "components/icon.html" with name="users" %}</span>{% else %}{% include "components/avatar.html" with u=other size="h-10 w-10" %}{% endif %}
+      <div class="min-w-0 flex-1"><p class="truncate font-bold">{% if other %}<a href="{% url 'profiles:detail' other.pk %}" class="hover:underline">{{ title }}</a>{% else %}{{ title }}{% endif %}</p>
+        <p class="truncate text-xs muted">{% if active.kind == "group" %}{{ members|length }} members{% elif other %}{{ other.get_role_display }}{% if other.department %} · {{ other.department }}{% endif %}{% endif %}</p></div>
+      <span id="conn" class="conn-pill off">Connecting…</span>
+      {% if active.kind == "group" %}<details class="relative"><summary class="btn btn-ghost !p-2" aria-label="Members">{% include "components/icon.html" with name="users" %}</summary>
+        <div class="card absolute right-0 top-11 z-20 w-60 p-3"><p class="mb-2 text-xs font-bold uppercase muted">Members</p>{% for m in members %}<a href="{% url 'profiles:detail' m.pk %}" class="flex items-center gap-2 py-1 text-sm hover:underline">{% include "components/avatar.html" with u=m size="h-6 w-6" text="text-[10px]" %}{{ m.full_name }}</a>{% endfor %}
+          <form method="post" action="{% url 'messaging:leave' active.pk %}" data-confirm="Leave this group?" class="mt-2 border-t pt-2" style="border-color:var(--border)">{% csrf_token %}<button class="text-sm font-semibold" style="color:var(--err-text)">Leave group</button></form></div></details>{% endif %}
+    </header>
+    {% if blocked %}<p class="border-b p-3 text-center text-sm" style="background:rgba(239,68,68,.08);color:var(--err-text)">You can't send messages in this conversation.</p>{% endif %}
+    <div id="msgs" class="msgs" data-conv="{{ active.pk }}" data-me="{{ user.pk }}" data-group="{% if active.kind == 'group' %}1{% endif %}" data-last="{{ last_id }}"
+         data-ws="/ws/chat/{{ active.pk }}/" data-send="{% url 'messaging:send' active.pk %}" data-poll="{% url 'messaging:poll' active.pk %}" data-read="{% url 'messaging:read' active.pk %}">
+      {% if has_more %}<a href="?before={{ oldest }}" class="sep hover:underline">↑ Load earlier messages</a>{% endif %}
+      {% for m in msgs %}{% ifchanged m.created_at|date:"Y-m-d" %}<div class="sep">{{ m.created_at|date:"D, j M" }}</div>{% endifchanged %}
+      <div class="msg {% if m.sender_id == user.id %}me{% else %}them{% endif %}" data-id="{{ m.pk }}">{% if active.kind == "group" and m.sender_id != user.id %}<span class="who">{{ m.sender.full_name }}</span>{% endif %}{{ m.body|linebreaksbr }}<time>{{ m.created_at|date:"g:i A" }}</time></div>
+      {% empty %}<p id="empty-chat" class="m-auto text-center text-sm muted">No messages yet. Say hello 👋</p>{% endfor %}
+    </div>
+    <div id="typing" class="typing" aria-live="polite"></div>
+    <form id="chat-form" class="composer-bar" {% if blocked %}style="display:none"{% endif %} autocomplete="off">{% csrf_token %}
+      <textarea id="chat-input" rows="1" maxlength="{{ chat_max }}" placeholder="Write a message…  (Enter to send, Shift+Enter for a new line)" aria-label="Message"></textarea>
+      <button class="btn btn-primary !px-4 !py-2.5" aria-label="Send">{% include "components/icon.html" with name="send" %}</button></form>
+  {% else %}
+    <div class="m-auto p-10 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="chat" %}</span><p class="mt-3 text-lg font-bold">Your messages</p><p class="mt-1 max-w-xs text-sm muted">Pick a conversation, or message someone you're connected with. Messages are private and only visible to people in the chat.</p></div>
+  {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}{% if active %}{% load static %}<script src="{% static 'js/chat.js' %}"></script>{% endif %}{% endblock %}

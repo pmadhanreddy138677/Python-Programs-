@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="sticky top-0 z-40 glass" style="border-width:0 0 1px 0">
+  <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+    <a href="{% url 'landing' %}">{% include "components/logo.html" %}</a>
+    <nav class="hidden items-center gap-7 text-sm font-medium md:flex muted" aria-label="Primary">
+      <a href="#features" class="hover:text-main">Features</a><a href="#communities" class="hover:text-main">Communities</a><a href="#about" class="hover:text-main">About</a>
+    </nav>
+    <div class="flex items-center gap-2">
+      {% include "components/theme_toggle.html" %}
+      {% if user.is_authenticated %}<a href="{% url 'dashboard:home' %}" class="btn btn-primary">Open Circliq</a>
+      {% else %}<a href="{% url 'accounts:login' %}" class="btn btn-ghost">Login</a><a href="{% url 'accounts:register' %}" class="btn btn-primary hidden sm:inline-flex">Get Started</a>{% endif %}
+    </div>
+  </div>
+</header>
+
+<main id="main" tabindex="-1">
+<section class="mesh">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+  <div class="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-20 pt-14 md:grid-cols-[1.1fr_1fr] md:pt-24">
+    <div>
+      <span class="badge reveal">✦ Student project · not an official university service</span>
+      <h1 class="hero-title reveal d1 mt-5 font-extrabold">Find Your Circle.<br><span class="gradient-text">Connect Beyond Classrooms.</span></h1>
+      <p class="reveal d2 mt-6 max-w-xl text-lg muted">Meet students who share your interests, discover communities, find study partners, collaborate on projects, and make the most of your campus life.</p>
+      <div class="reveal d3 mt-8 flex flex-wrap gap-3">
+        <a href="{% url 'accounts:register' %}" class="btn btn-primary glow !px-7 !py-3.5 text-base">Join Circliq →</a>
+        <a href="#features" class="btn btn-secondary !px-7 !py-3.5 text-base">Explore Features</a>
+      </div>
+      <div class="reveal d3 mt-8 flex items-center gap-3 text-sm muted">
+        <div class="flex -space-x-2"><span class="avatar v1 h-8 w-8 border-2 text-xs" style="border-color:var(--bg)">A</span><span class="avatar v2 h-8 w-8 border-2 text-xs" style="border-color:var(--bg)">R</span><span class="avatar v3 h-8 w-8 border-2 text-xs" style="border-color:var(--bg)">S</span><span class="avatar h-8 w-8 border-2 text-xs" style="border-color:var(--bg)">M</span></div>
+        <span>Private to your campus. Verified students only.</span>
+      </div>
+    </div>
+
+    <div class="relative mx-auto h-[26rem] w-full max-w-md" aria-hidden="true">
+      <svg class="absolute inset-0 h-full w-full" viewBox="0 0 420 420" fill="none">
+        <defs><linearGradient id="hg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4F46E5"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs>
+        <circle cx="210" cy="210" r="150" stroke="url(#hg)" stroke-opacity=".35" stroke-dasharray="4 8"/><circle cx="210" cy="210" r="95" stroke="url(#hg)" stroke-opacity=".5"/>
+        <path d="M100 90 300 70M100 90 70 280M300 70 350 260M70 280 350 260M100 90 350 260M210 210 100 90M210 210 350 260M210 210 70 280" stroke="url(#hg)" stroke-opacity=".5"/>
+        <circle cx="210" cy="210" r="34" fill="url(#hg)"/><circle cx="210" cy="210" r="48" stroke="#7C3AED" stroke-opacity=".3" stroke-width="10"><animate attributeName="r" values="44;58;44" dur="3.5s" repeatCount="indefinite"/><animate attributeName="stroke-opacity" values=".35;0;.35" dur="3.5s" repeatCount="indefinite"/></circle>
+      </svg>
+      <div class="card tilt glass float-a absolute left-0 top-4 flex items-center gap-3 p-3 shadow-xl"><span class="avatar v1 h-11 w-11">A</span><div><p class="text-sm font-semibold">Aarav · AI &amp; ML</p><p class="text-xs muted">Sample · loves Python</p></div></div>
+      <div class="card tilt glass float-b absolute right-0 top-0 p-3 shadow-xl"><div class="flex items-center gap-2"><span class="icon-tile t-violet !h-9 !w-9 !rounded-xl">{% include "components/icon.html" with name="circles" %}</span><div><p class="text-sm font-semibold">Python Learners</p><p class="text-xs muted">Sample · 128 members</p></div></div></div>
+      <div class="card tilt glass float-b absolute bottom-10 left-6 p-3 shadow-xl"><p class="text-xs font-semibold" style="color:var(--primary)">✦ Study match</p><p class="mt-1 text-sm font-semibold">You both enjoy Python and AI.</p></div>
+      <div class="card tilt glass float-a absolute bottom-0 right-2 flex items-center gap-3 p-3 shadow-xl"><span class="icon-tile t-green !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name="code" %}</span><div><p class="text-sm font-semibold">Project team</p><p class="text-xs muted">Sample · needs a designer</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="border-y py-5" style="border-color:var(--border)" aria-label="Interests">
+  <div class="marq-wrap"><div class="marquee">
+    {% for i in "ab" %}<span class="badge !px-4 !py-1.5 !text-sm">Python</span><span class="badge !px-4 !py-1.5 !text-sm">Artificial Intelligence</span><span class="badge !px-4 !py-1.5 !text-sm">Gaming</span><span class="badge !px-4 !py-1.5 !text-sm">Anime</span><span class="badge !px-4 !py-1.5 !text-sm">Cricket</span><span class="badge !px-4 !py-1.5 !text-sm">Photography</span><span class="badge !px-4 !py-1.5 !text-sm">Web Development</span><span class="badge !px-4 !py-1.5 !text-sm">Music</span><span class="badge !px-4 !py-1.5 !text-sm">Design</span><span class="badge !px-4 !py-1.5 !text-sm">Entrepreneurship</span><span class="badge !px-4 !py-1.5 !text-sm">Reading</span><span class="badge !px-4 !py-1.5 !text-sm">Machine Learning</span>
+    {% endfor %}
+  </div></div>
+</section>
+
+<section class="mx-auto max-w-6xl px-4 pt-20">
+  <div class="grid gap-5 md:grid-cols-3">
+    <div class="reveal card p-7 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="users" %}</span><h3 class="mt-4 text-xl font-bold">Connect</h3><p class="mt-2 text-sm muted">Discover people and build meaningful friendships.</p></div>
+    <div class="reveal d1 card p-7 text-center"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="code" %}</span><h3 class="mt-4 text-xl font-bold">Collaborate</h3><p class="mt-2 text-sm muted">Find study partners and project teammates.</p></div>
+    <div class="reveal d2 card p-7 text-center"><span class="icon-tile t-violet">{% include "components/icon.html" with name="circles" %}</span><h3 class="mt-4 text-xl font-bold">Belong</h3><p class="mt-2 text-sm muted">Join communities where you feel included.</p></div>
+  </div>
+</section>
+
+<section id="features" class="mx-auto max-w-6xl scroll-mt-20 px-4 py-20">
+  <h2 class="reveal text-center text-3xl font-extrabold tracking-tight sm:text-4xl">Everything your campus life needs</h2>
+  <p class="reveal mx-auto mt-3 max-w-xl text-center muted">One private place for people, communities, learning and building.</p>
+  <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="reveal card card-hover glow p-6"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="users" %}</span><h3 class="mt-4 font-bold">Find Your People</h3><p class="mt-2 text-sm muted">Meet students who share your interests, skills and goals, with matches that explain why.</p></div>
+    <div id="communities" class="reveal d1 card card-hover glow p-6"><span class="icon-tile t-violet">{% include "components/icon.html" with name="grid" %}</span><h3 class="mt-4 font-bold">Discover Communities</h3><p class="mt-2 text-sm muted">Public, private and official groups built around what you love.</p></div>
+    <div class="reveal d2 card card-hover glow p-6"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="book" %}</span><h3 class="mt-4 font-bold">Study Together</h3><p class="mt-2 text-sm muted">Find study partners and learning groups for any subject.</p></div>
+    <div class="reveal card card-hover glow p-6"><span class="icon-tile t-amber">{% include "components/icon.html" with name="code" %}</span><h3 class="mt-4 font-bold">Build Projects</h3><p class="mt-2 text-sm muted">Post ideas, find teammates and ship something real.</p></div>
+    <div class="reveal d1 card card-hover glow p-6"><span class="icon-tile t-green">{% include "components/icon.html" with name="shield" %}</span><h3 class="mt-4 font-bold">Connect with Faculty</h3><p class="mt-2 text-sm muted">Ask questions, find mentors and discover research opportunities.</p></div>
+    <div class="reveal d2 card card-hover glow p-6"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="star" %}</span><h3 class="mt-4 font-bold">Explore Campus Life</h3><p class="mt-2 text-sm muted">Events, clubs and conversations happening around you.</p></div>
+  </div>
+  <p class="mt-6 text-center text-sm muted">Live today: accounts, profiles, discovery, connections, communities and discussions. More modules are being built phase by phase.</p>
+</section>
+
+<section class="mx-auto max-w-6xl px-4 pb-20">
+  <h2 class="reveal text-center text-3xl font-extrabold tracking-tight sm:text-4xl">How it works</h2>
+  <div class="relative mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="absolute left-[12%] right-[12%] top-6 hidden h-0.5 lg:block" style="background:linear-gradient(90deg,var(--primary),var(--cyan));opacity:.35"></div>
+    <div class="reveal relative text-center"><span class="icon-tile t-indigo relative z-10 !h-12 !w-12 text-lg font-extrabold">1</span><p class="mt-4 font-semibold">Create your verified campus profile.</p></div>
+    <div class="reveal d1 relative text-center"><span class="icon-tile t-violet relative z-10 !h-12 !w-12 text-lg font-extrabold">2</span><p class="mt-4 font-semibold">Select your interests and goals.</p></div>
+    <div class="reveal d2 relative text-center"><span class="icon-tile t-cyan relative z-10 !h-12 !w-12 text-lg font-extrabold">3</span><p class="mt-4 font-semibold">Discover students and communities.</p></div>
+    <div class="reveal d3 relative text-center"><span class="icon-tile t-green relative z-10 !h-12 !w-12 text-lg font-extrabold">4</span><p class="mt-4 font-semibold">Connect, collaborate, and grow.</p></div>
+  </div>
+</section>
+
+<section class="mx-auto max-w-6xl px-4 pb-20">
+  <div class="reveal banner p-10 text-center sm:p-14">
+    <h2 class="relative z-10 text-3xl font-extrabold tracking-tight sm:text-4xl">Your Campus Has More to Offer.<br>Discover It Together.</h2>
+    <a href="{% url 'accounts:register' %}" class="btn relative z-10 mt-7 !bg-white !px-8 !py-3.5 text-base !text-indigo-700">Get Started</a>
+  </div>
+</section>
+</main>
+
+<footer class="border-t" style="border-color:var(--border)">
+  <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-8 text-sm muted md:flex-row md:items-center md:justify-between">
+    <div>{% include "components/logo.html" %}<p class="mt-2">A student project. Not affiliated with or endorsed by any university unless stated.</p></div>
+    <p>About · Privacy · Terms · Contact <span class="opacity-70">(pages coming soon)</span></p>
+  </div>
+</footer>
+{% endblock %}

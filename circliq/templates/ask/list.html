@@ -1,0 +1,30 @@
+{% extends "app_base.html" %}
+{% block title %}Ask Circliq · circliq{% endblock %}
+{% block content %}
+<section class="hero hero-ask flex flex-wrap items-center justify-between gap-4 p-6 sm:p-9">
+  <div class="relative z-10 max-w-xl"><h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Ask Circliq</h1><p class="mt-2 text-white/90">Got a question about classes, code, careers or campus? Ask your peers, and help someone else out.</p></div>
+  <a href="{% url 'ask:new' %}" class="btn relative z-10 !bg-white !text-indigo-700">{% include "components/icon.html" with name="plus" %}Ask a question</a></section>
+<form method="get" class="mt-5 flex flex-wrap gap-2">
+  <input name="q" aria-label="Search" value="{{ q }}" class="input min-w-[220px] flex-1" placeholder="Search questions…">
+  <select name="status" class="input !w-auto" data-autosubmit aria-label="Status"><option value="">Any status</option><option value="unanswered" {% if status == "unanswered" %}selected{% endif %}>Unanswered</option><option value="open" {% if status == "open" %}selected{% endif %}>No accepted answer</option><option value="solved" {% if status == "solved" %}selected{% endif %}>Solved</option></select>
+  <select name="sort" class="input !w-auto" data-autosubmit aria-label="Sort order"><option value="new">Newest</option><option value="helpful" {% if sort == "helpful" %}selected{% endif %}>Most helpful</option></select>
+  <input type="hidden" name="category" value="{{ cat }}"><input type="hidden" name="scope" value="{{ scope }}"><button class="btn btn-secondary">Search</button></form>
+<div class="-mx-1 mt-4 flex gap-1 overflow-x-auto px-1">
+  <a class="tab whitespace-nowrap {% if not cat %}active{% endif %}" href="?scope={{ scope }}">All</a>{% for k, l in categories %}<a class="tab whitespace-nowrap {% if cat == k %}active{% endif %}" href="?category={{ k }}&scope={{ scope }}">{{ l }}</a>{% endfor %}</div>
+<div class="mt-2 flex gap-1 text-xs"><a class="tab {% if not scope %}active{% endif %}" href="?category={{ cat }}">Everyone</a><a class="tab {% if scope == 'mine' %}active{% endif %}" href="?scope=mine">My questions</a><a class="tab {% if scope == 'answered' %}active{% endif %}" href="?scope=answered">I answered</a><a class="tab {% if scope == 'saved' %}active{% endif %}" href="?scope=saved">Saved</a></div>
+<div class="card mt-4 overflow-hidden">
+  {% for q in page %}
+  <div class="qrow">
+    <div class="flex gap-2"><div class="qstat {% if q.accepted_answer_id %}solved{% endif %}"><b>{{ q.answer_count }}</b>answer{{ q.answer_count|pluralize }}</div></div>
+    <div class="min-w-0 flex-1"><a href="{% url 'ask:detail' q.pk %}" class="text-lg font-bold leading-snug hover:underline">{{ q.title }}</a>
+      <p class="mt-1 line-clamp-2 text-sm muted">{{ q.body }}</p>
+      <div class="mt-2 flex flex-wrap items-center gap-2 text-xs muted"><span class="badge">{{ q.get_category_display }}</span>{% if q.accepted_answer_id %}<span class="pill pill-open">Solved</span>{% elif not q.answer_count %}<span class="pill" style="background:rgba(245,158,11,.15);color:var(--warn-text)">Needs an answer</span>{% endif %}
+        <span class="flex items-center gap-1.5">{% include "components/avatar.html" with u=q.author size="h-5 w-5" text="text-[9px]" %}{{ q.author.full_name }} · {{ q.created_at|timesince }} ago</span></div></div>
+    {% if q.i_saved %}<span class="muted" title="Saved"><span class="block h-5 w-5" style="color:var(--primary)">{% include "components/icon.html" with name="bookmark" %}</span></span>{% endif %}
+  </div>
+  {% empty %}<div class="p-12 text-center"><span class="icon-tile t-cyan">{% include "components/icon.html" with name="help" %}</span><p class="mt-3 text-lg font-semibold">No questions here yet</p><p class="mt-1 text-sm muted">Be the first to ask, and help the next student who wonders the same thing.</p><a href="{% url 'ask:new' %}" class="btn btn-primary mt-4">Ask a question</a></div>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pagination">{% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Newer</a>{% endif %}<span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>{% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Older →</a>{% endif %}</nav>{% endif %}
+<section class="card mt-8 p-5"><h2 class="font-bold">Contribution badges</h2><p class="mt-1 text-xs muted">Earned by helping others, with clear rules. These are recognition inside Circliq, not a university certificate.</p>
+  <div class="mt-4 grid gap-4 sm:grid-cols-2">{% for b in badge_info %}<div class="flex items-center gap-3"><span class="medal {{ b.tile }} earned">{% include "components/icon.html" with name=b.icon %}</span><div><p class="text-sm font-bold">{{ b.name }}</p><p class="text-xs muted">{{ b.rule }}</p></div></div>{% endfor %}</div></section>
+{% endblock %}

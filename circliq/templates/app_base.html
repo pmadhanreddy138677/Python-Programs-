@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="mx-auto flex min-h-screen max-w-[1400px]">
+  <aside class="sticky top-0 hidden h-screen w-64 shrink-0 flex-col border-r p-4 lg:flex" style="border-color:var(--border)">
+    <a href="{% url 'dashboard:home' %}" class="mb-6 px-2">{% include "components/logo.html" %}</a>
+    <nav class="flex flex-1 flex-col gap-1 overflow-y-auto" aria-label="Main">{% include "components/nav_items.html" %}</nav>
+    <div class="mt-4 space-y-1 border-t pt-4" style="border-color:var(--border)">
+      <a href="{% url 'accounts:settings' %}" class="nav-item">{% include "components/icon.html" with name="key" %}Settings &amp; privacy</a>
+      <div class="flex items-center justify-between px-2"><span class="text-sm muted">Theme</span>{% include "components/theme_toggle.html" %}</div>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="nav-item w-full">{% include "components/icon.html" with name="logout" %}Log out</button></form>
+    </div>
+  </aside>
+
+  <main id="main" tabindex="-1" class="min-w-0 flex-1 px-4 pb-24 pt-4 lg:px-8 lg:pb-10">
+    <div class="topbar flex items-center gap-3">
+      <a href="{% url 'dashboard:home' %}" class="lg:hidden">{% include "components/logo.html" %}</a>
+      <form method="get" action="{% url 'recommendations:search' %}" class="relative mr-auto w-full max-w-md">
+        <span class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 muted">{% include "components/icon.html" with name="search" %}</span>
+        <input name="q" class="input !pl-10" placeholder="Search people, communities, projects, events, questions…" aria-label="Search Circliq" value="{{ request.GET.q }}">
+      </form>
+      <button class="btn btn-ghost !p-2 lg:hidden" data-drawer-open aria-label="Open menu"><svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <a href="{% url 'messaging:inbox' %}" class="btn btn-ghost relative !p-2" aria-label="Messages"><span class="block h-5 w-5">{% include "components/icon.html" with name="chat" %}</span>{% if unread_messages %}<span class="nbadge">{{ unread_messages }}</span>{% endif %}</a>
+      <div class="relative">
+        <button type="button" id="bell" class="btn btn-ghost relative !p-2" aria-label="Notifications" aria-expanded="false"><span class="block h-5 w-5">{% include "components/icon.html" with name="bell" %}</span><span class="nbadge {% if not unread_notifications %}hidden{% endif %}" data-notif-badge>{{ unread_notifications }}</span></button>
+        <div id="notif-menu" class="card absolute right-0 top-12 z-50 hidden w-[22rem] max-w-[92vw] overflow-hidden"><div class="p-6 text-center text-sm muted">Loading…</div></div>
+      </div>
+      <a href="{% url 'profiles:me' %}" class="hidden lg:block" aria-label="My profile">{% include "components/avatar.html" with u=user %}</a>
+    </div>
+    <div class="fade-in">{% block content %}{% endblock %}</div>
+  </main>
+
+  {% block rail %}{% endblock %}
+</div>
+
+<nav class="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t py-1.5 text-center text-[11px] font-medium lg:hidden" style="background:var(--surface);border-color:var(--border)" aria-label="Mobile">
+  {% with v=request.resolver_match.view_name %}
+  <a href="{% url 'dashboard:home' %}" class="flex flex-col items-center gap-0.5 py-1 {% if v == 'dashboard:home' %}tx-primary{% else %}muted{% endif %}"><span class="h-5 w-5">{% include "components/icon.html" with name="home" %}</span>Home</a>
+  <a href="{% url 'profiles:discover' %}" class="flex flex-col items-center gap-0.5 py-1 {% if v == 'profiles:discover' %}tx-primary{% else %}muted{% endif %}"><span class="h-5 w-5">{% include "components/icon.html" with name="discover" %}</span>Discover</a>
+  <a href="{% url 'messaging:inbox' %}" class="relative flex flex-col items-center gap-0.5 py-1 {% if 'messaging:' in v %}tx-primary{% else %}muted{% endif %}"><span class="h-5 w-5">{% include "components/icon.html" with name="chat" %}</span>Messages{% if unread_messages %}<span class="nbadge !right-[28%] !top-0">{{ unread_messages }}</span>{% endif %}</a>
+  <a href="{% url 'notifications:list' %}" class="relative flex flex-col items-center gap-0.5 py-1 {% if 'notifications:' in v %}tx-primary{% else %}muted{% endif %}"><span class="h-5 w-5">{% include "components/icon.html" with name="bell" %}</span>Alerts{% if unread_notifications %}<span class="nbadge !right-[28%] !top-0" data-notif-badge>{{ unread_notifications }}</span>{% endif %}</a>
+  <a href="{% url 'profiles:me' %}" class="flex flex-col items-center gap-0.5 py-1 {% if v == 'profiles:detail' or v == 'profiles:edit' %}tx-primary{% else %}muted{% endif %}"><span class="h-5 w-5">{% include "components/icon.html" with name="user" %}</span>Profile</a>
+  {% endwith %}
+</nav>
+
+<div id="drawer" class="fixed inset-0 z-40 hidden lg:hidden">
+  <div class="absolute inset-0 bg-black/50" data-drawer-close></div>
+  <div class="absolute right-0 top-0 h-full w-72 overflow-y-auto p-4" style="background:var(--surface)">
+    <div class="mb-3 flex items-center justify-between"><span class="font-semibold">Menu</span><button class="btn btn-ghost" data-drawer-close>Close</button></div>
+    <nav class="flex flex-col gap-1" aria-label="Menu">{% include "components/nav_items.html" %}</nav>
+    <div class="mt-4 space-y-1 border-t pt-4" style="border-color:var(--border)">
+      <div class="flex items-center justify-between px-2"><span class="text-sm muted">Theme</span>{% include "components/theme_toggle.html" %}</div>
+      <a href="{% url 'accounts:settings' %}" class="nav-item">{% include "components/icon.html" with name="key" %}Settings &amp; privacy</a>
+      <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="nav-item w-full">{% include "components/icon.html" with name="logout" %}Log out</button></form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1 @@
+{% if u.profile.avatar %}<img src="{{ u.profile.avatar.url }}" alt="" class="avatar {{ size|default:'h-10 w-10' }}">{% else %}<span class="avatar v{{ u.pk|divisibleby:2|yesno:'1,2' }} {{ size|default:'h-10 w-10' }} {{ text|default:'text-sm' }}" aria-hidden="true">{{ u.full_name|slice:":1"|upper }}</span>{% endif %}

@@ -1,0 +1,20 @@
+{% comment %}Expects r (row dict from ranked()), and optional next.{% endcomment %}
+<article class="card card-hover flex flex-col p-5">
+  <div class="flex items-center gap-3">
+    <a href="{% url 'profiles:detail' r.user.pk %}">{% include "components/avatar.html" with u=r.user size="h-12 w-12" text="text-lg" %}</a>
+    <div class="min-w-0">
+      <a href="{% url 'profiles:detail' r.user.pk %}" class="block truncate font-semibold hover:underline">{{ r.user.full_name }}</a>
+      <p class="truncate text-xs muted">{{ r.user.program|default:r.user.department|default:"" }}{% if r.user.academic_year %} · Year {{ r.user.academic_year }}{% endif %}</p>
+    </div>
+  </div>
+  {% if r.user.profile.bio %}<p class="mt-3 line-clamp-2 text-sm muted">{{ r.user.profile.bio }}</p>{% endif %}
+  <div class="mt-3 flex flex-wrap gap-1">
+    {% for i in r.user.profile.interests.all|slice:":4" %}<span class="badge" {% if i.name in r.shared %}style="background:var(--primary-strong);color:#fff"{% endif %}>{{ i.name }}</span>{% endfor %}
+    {% for s in r.user.profile.skills.all|slice:":3" %}<span class="badge" style="background:rgba(6,182,212,.14);color:var(--cyan-text)">{{ s.name }}</span>{% endfor %}
+  </div>
+  {% if r.why %}<p class="mt-3 rounded-lg px-3 py-2 text-xs font-medium" style="background:var(--surface-2);color:var(--primary)">✦ {{ r.why }}</p>{% endif %}
+  <div class="mt-auto flex gap-2 pt-4">
+    <a href="{% url 'profiles:detail' r.user.pk %}" class="btn btn-secondary flex-1 !py-2">View</a>
+    {% include "components/connect_button.html" with other=r.user rel=r.rel conn=r.conn next=next %}
+  </div>
+</article>

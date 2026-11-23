@@ -1,0 +1,10 @@
+<div class="mb-5 flex flex-wrap gap-2" role="navigation" aria-label="Admin sections">
+  {% with v=request.resolver_match.view_name %}
+  <a class="tab {% if v == 'campusadmin:dashboard' %}active{% endif %}" href="{% url 'campusadmin:dashboard' %}">Overview</a>
+  <a class="tab {% if v == 'campusadmin:users' %}active{% endif %}" href="{% url 'campusadmin:users' %}">Users</a>
+  <a class="tab {% if v == 'campusadmin:communities' %}active{% endif %}" href="{% url 'campusadmin:communities' %}">Communities</a>
+  <a class="tab {% if v == 'campusadmin:reports' %}active{% endif %}" href="{% url 'campusadmin:reports' %}">Reports</a>
+  <a class="tab {% if v == 'campusadmin:audit' %}active{% endif %}" href="{% url 'campusadmin:audit' %}">Audit log</a>
+  <a class="tab" href="{% url 'faculty:announcement_new' %}">Post announcement</a>
+  {% endwith %}
+</div>

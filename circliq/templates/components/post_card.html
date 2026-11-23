@@ -1,0 +1,23 @@
+{% comment %}Expects p (annotated post). Optional: full=True to show the whole body.{% endcomment %}
+<article class="card post p-5">
+  <div class="flex items-start gap-3">
+    <a href="{% url 'profiles:detail' p.author.pk %}">{% include "components/avatar.html" with u=p.author size="h-11 w-11" %}</a>
+    <div class="min-w-0 flex-1">
+      <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <a href="{% url 'profiles:detail' p.author.pk %}" class="font-semibold hover:underline">{{ p.author.full_name }}</a>
+        <span class="kind kind-{{ p.kind }}">{{ p.get_kind_display }}</span>
+      </div>
+      <p class="text-xs muted">{{ p.author.get_role_display }}{% if p.author.department %} · {{ p.author.department }}{% endif %} · in <a href="{% url 'communities:detail' p.community_id %}" class="font-semibold" style="color:var(--primary)">{{ p.community.name }}</a> · {{ p.created_at|timesince }} ago{% if p.edited_at %} · edited{% endif %}</p>
+    </div>
+  </div>
+  {% if p.title %}<a href="{% url 'discussions:detail' p.pk %}" class="mt-3 block text-lg font-bold leading-snug hover:underline">{{ p.title }}</a>{% endif %}
+  <p class="mt-2 text-[15px] leading-relaxed">{% if full %}{{ p.body|linebreaksbr }}{% else %}{{ p.body|truncatewords:55|linebreaksbr }}{% endif %}</p>
+  {% if p.image %}<img src="{{ p.image.url }}" alt="" class="mt-3 max-h-96 w-full rounded-xl object-cover" loading="lazy">{% endif %}
+  <div class="mt-4 flex flex-wrap items-center gap-1 border-t pt-2" style="border-color:var(--border)">
+    <form method="post" action="{% url 'discussions:react' p.pk %}" data-toggle>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act {% if p.i_reacted %}on{% endif %}" aria-label="React">{% include "components/icon.html" with name="heart" %}<span data-count>{{ p.reaction_count }}</span></button></form>
+    <a href="{% url 'discussions:detail' p.pk %}#comments" class="act">{% include "components/icon.html" with name="chat" %}{{ p.comment_count }}</a>
+    <form method="post" action="{% url 'discussions:save' p.pk %}" data-toggle>{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="act save {% if p.i_saved %}on{% endif %}" aria-label="Bookmark">{% include "components/icon.html" with name="bookmark" %}</button></form>
+    <button type="button" class="act" data-copy="{% url 'discussions:detail' p.pk %}">{% include "components/icon.html" with name="link" %}<span>Copy link</span></button>
+    {% if p.author_id != user.id %}<a href="{% url 'moderation:report_post' p.pk %}" class="act ml-auto" title="Report">{% include "components/icon.html" with name="flag" %}</a>{% endif %}
+  </div>
+</article>

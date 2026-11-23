@@ -1,0 +1,10 @@
+{% extends "app_base.html" %}
+{% block title %}Saved · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">Saved posts</h1>
+<p class="mt-1 muted">Posts you bookmarked, kept private to you.</p>
+<div class="mt-5 space-y-4">
+  {% for p in page %}{% include "components/post_card.html" %}
+  {% empty %}<div class="card p-10 text-center"><span class="icon-tile t-indigo">{% include "components/icon.html" with name="bookmark" %}</span><p class="mt-3 text-lg font-semibold">Nothing saved yet</p><p class="mt-1 text-sm muted">Tap the bookmark on any post to keep it here.</p></div>{% endfor %}
+</div>
+{% endblock %}

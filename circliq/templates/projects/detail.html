@@ -1,0 +1,66 @@
+{% extends "app_base.html" %}
+{% block title %}{{ p.title }} · circliq{% endblock %}
+{% block content %}
+<a href="{% url 'projects:list' %}" class="text-sm font-semibold muted hover:underline">← Project Hub</a>
+<div class="card mt-3 overflow-hidden"><div class="hero-project h-3"></div>
+  <div class="p-5 sm:p-7">
+    <div class="flex flex-wrap items-center gap-1.5"><span class="pill pill-{{ p.status }}">{{ p.get_status_display }}</span><span class="badge">{{ p.get_category_display }}</span>{% if p.kind != "project" %}<span class="badge official">{{ p.get_kind_display }}</span>{% endif %}</div>
+    <h1 class="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">{{ p.title }}</h1>
+    <p class="mt-1 text-sm muted">Led by <a href="{% url 'profiles:detail' p.creator.pk %}" class="font-semibold hover:underline">{{ p.creator.full_name }}</a>{% if p.deadline %} · deadline {{ p.deadline|date:"j M Y" }} (in {{ p.deadline|timeuntil }}){% endif %}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-3">{% include "components/capacity_ring.html" with value=p.member_count max=p.team_size size=56 %}<div><p class="text-sm font-semibold">{{ p.member_count }} of {{ p.team_size }} team spots filled</p><p class="text-xs muted">{% if full %}Team is full{% else %}{{ p.team_size|add:"0" }} max{% endif %}</p></div>
+      <div class="ml-auto flex flex-wrap gap-2">
+        {% if lead %}<a href="{% url 'projects:edit' p.pk %}" class="btn btn-secondary">Edit</a>
+          <form method="post" action="{% url 'projects:status' p.pk %}" class="flex gap-1">{% csrf_token %}<select name="status" data-autosubmit aria-label="Project status" style="width:auto">{% for k, l in status_choices %}<option value="{{ k }}" {% if p.status == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></form>
+        {% elif member %}<form method="post" action="{% url 'projects:leave' p.pk %}" data-confirm="Leave this project?">{% csrf_token %}<button class="btn btn-secondary">Leave project</button></form>{% endif %}
+      </div></div>
+    {% if member %}<div class="mt-5"><p class="mb-1 text-xs font-semibold muted">Project progress · {{ task_count }} task{{ task_count|pluralize }}</p>{% include "components/progress.html" with value=progress %}</div>{% endif %}
+  </div>
+</div>
+
+{% if not member %}
+<div class="card mt-4 p-5">
+  {% if my_app and my_app.status == "pending" %}<p class="font-semibold">Application sent</p><p class="text-sm muted">The project lead will review it.</p>
+    <form method="post" action="{% url 'projects:withdraw' p.pk %}" class="mt-3">{% csrf_token %}<button class="btn btn-secondary !py-2">Withdraw application</button></form>
+  {% elif my_app and my_app.status == "rejected" %}<p class="font-semibold">Not selected this time</p><p class="text-sm muted">There are plenty of other projects to explore.</p>
+  {% elif p.status != "open" %}<p class="font-semibold">This project isn't recruiting right now.</p>
+  {% elif full %}<p class="font-semibold">This team is full.</p>
+  {% else %}<p class="font-semibold">Want to join?</p>
+    <form method="post" action="{% url 'projects:apply' p.pk %}" class="mt-3 space-y-3">{% csrf_token %}{{ app_form.message }}<button class="btn btn-primary">{% include "components/icon.html" with name="rocket" %}Apply to join</button></form>{% endif %}
+</div>{% endif %}
+
+<div class="-mx-1 mt-5 flex gap-1 overflow-x-auto px-1">
+  <a class="tab {% if tab == 'overview' %}active{% endif %}" href="?tab=overview">Overview</a>
+  {% if member %}<a class="tab {% if tab == 'tasks' %}active{% endif %}" href="?tab=tasks">Tasks</a><a class="tab {% if tab == 'discussion' %}active{% endif %}" href="?tab=discussion">Discussion</a>{% endif %}
+  {% if lead %}<a class="tab {% if tab == 'applications' %}active{% endif %}" href="?tab=applications">Applications{% if pending_count %} <span class="badge" style="background:var(--err-strong);color:#fff">{{ pending_count }}</span>{% endif %}</a>{% endif %}
+</div>
+
+{% if tab == "tasks" and member %}
+  <form method="post" action="{% url 'projects:task_new' p.pk %}" class="card mt-4 flex flex-wrap gap-2 p-4">{% csrf_token %}
+    <input name="title" class="input min-w-[200px] flex-1" placeholder="New task, e.g. Design the database schema" maxlength="150" required aria-label="New task, e.g. Design the database schema">{{ task_form.assignee }}<button class="btn btn-primary">{% include "components/icon.html" with name="plus" %}Add task</button></form>
+  <div class="mt-4">{% include "components/kanban.html" with move_name="projects:task_move" delete_name="projects:task_delete" manager=lead %}</div>
+{% elif tab == "discussion" and member %}
+  <form method="post" action="{% url 'projects:comment_new' p.pk %}" class="card mt-4 p-4">{% csrf_token %}{{ comment_form.body }}<button class="btn btn-primary mt-3 !py-2">Post</button></form>
+  <div class="mt-4 space-y-3">{% for c in comments %}<div class="card flex gap-3 p-4">{% include "components/avatar.html" with u=c.author size="h-10 w-10" %}<div class="min-w-0 flex-1"><p class="text-sm"><b>{{ c.author.full_name }}</b> <span class="text-xs muted">· {{ c.created_at|timesince }} ago</span></p><p class="mt-1 text-[15px]">{{ c.body|linebreaksbr }}</p></div>
+    {% if c.author_id == user.id or lead %}<form method="post" action="{% url 'projects:comment_delete' c.pk %}">{% csrf_token %}<button class="act">✕</button></form>{% endif %}</div>
+  {% empty %}<div class="card p-10 text-center"><p class="font-semibold">No messages yet</p><p class="mt-1 text-sm muted">Plan the kickoff with your team.</p></div>{% endfor %}</div>
+{% elif tab == "applications" and lead %}
+  <div class="mt-4 space-y-3">{% for a in applications %}
+    <div class="card p-4"><div class="flex flex-wrap items-center gap-3">{% include "components/avatar.html" with u=a.applicant size="h-11 w-11" %}
+      <div class="min-w-0 flex-1"><a href="{% url 'profiles:detail' a.applicant.pk %}" class="font-semibold hover:underline">{{ a.applicant.full_name }}</a><p class="text-xs muted">{{ a.applicant.department|default:"" }}{% if a.applicant.academic_year %} · Year {{ a.applicant.academic_year }}{% endif %} · {{ a.get_status_display }}</p></div>
+      {% if a.status == "pending" %}<form method="post" action="{% url 'projects:application' a.pk 'accept' %}">{% csrf_token %}<button class="btn btn-primary !py-1.5">Accept</button></form><form method="post" action="{% url 'projects:application' a.pk 'reject' %}">{% csrf_token %}<button class="btn btn-secondary !py-1.5">Reject</button></form>{% endif %}</div>
+      {% if a.message %}<p class="mt-2 rounded-lg p-3 text-sm" style="background:var(--surface-2)">{{ a.message }}</p>{% endif %}</div>
+  {% empty %}<div class="card p-10 text-center"><p class="font-semibold">No applications yet</p></div>{% endfor %}</div>
+{% else %}
+  <div class="mt-4 grid gap-4 md:grid-cols-3">
+    <div class="space-y-4 md:col-span-2">
+      <section class="card p-5"><h2 class="font-bold">About this project</h2><p class="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{{ p.description }}</p></section>
+      {% if p.goals %}<section class="card p-5"><h2 class="font-bold">Goals</h2><p class="mt-2 whitespace-pre-line text-[15px] leading-relaxed">{{ p.goals }}</p></section>{% endif %}
+      <section class="card p-5"><h2 class="font-bold">Skills &amp; technologies</h2><div class="mt-2 flex flex-wrap gap-1">{% for s in p.required_skills.all %}<span class="badge" {% if s.pk in skills_have %}style="background:var(--ok-strong);color:#fff"{% else %}style="background:rgba(6,182,212,.14);color:var(--cyan-text)"{% endif %}>{% if s.pk in skills_have %}✓ {% endif %}{{ s.name }}</span>{% empty %}<span class="text-sm muted">No specific skills listed.</span>{% endfor %}</div>
+        {% if p.technologies %}<p class="mt-3 text-sm muted">Tech: {{ p.technologies }}</p>{% endif %}</section>
+    </div>
+    <section class="card h-fit p-5"><h2 class="font-bold">Team</h2><div class="mt-3 space-y-3">{% for tm in team %}
+      <div class="flex items-center gap-3"><a href="{% url 'profiles:detail' tm.user.pk %}">{% include "components/avatar.html" with u=tm.user %}</a><div class="min-w-0 flex-1"><a href="{% url 'profiles:detail' tm.user.pk %}" class="block truncate text-sm font-semibold hover:underline">{{ tm.user.full_name }}</a><p class="text-xs muted">{{ tm.get_role_display }}</p></div>
+        {% if lead and tm.role != "lead" %}<form method="post" action="{% url 'projects:member_remove' p.pk tm.pk %}" data-confirm="Remove this member?">{% csrf_token %}<button class="act" aria-label="Remove">✕</button></form>{% endif %}</div>{% endfor %}</div></section>
+  </div>
+{% endif %}
+{% endblock %}

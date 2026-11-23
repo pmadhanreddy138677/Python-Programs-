@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}429 · circliq{% endblock %}
+{% block body %}
+<div class="flex min-h-screen flex-col items-center justify-center gap-3 p-6 text-center">
+  <p class="text-6xl font-extrabold gradient-text">429</p>
+  <h1 class="text-2xl font-bold">Too many attempts</h1>
+  <p class="muted">Please wait a few minutes and try again.</p>
+  <a href="{% url 'landing' %}" class="btn btn-primary mt-2">Back to home</a>
+</div>
+{% endblock %}

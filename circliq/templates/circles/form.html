@@ -1,0 +1,12 @@
+{% extends "app_base.html" %}
+{% block title %}{{ title }} · circliq{% endblock %}
+{% block content %}
+<h1 class="text-3xl font-extrabold tracking-tight">{{ title }}</h1>
+<form method="post" class="card mt-5 max-w-2xl space-y-4 p-5" novalidate>{% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  {% include "components/field.html" with field=form.name %}{% include "components/field.html" with field=form.purpose %}
+  <div class="grid gap-3 sm:grid-cols-2">{% include "components/field.html" with field=form.category %}{% include "components/field.html" with field=form.max_members %}</div>
+  {% include "components/field.html" with field=form.join_policy %}
+  <div class="flex gap-3"><button class="btn btn-primary">Save</button><a class="btn btn-secondary" href="{% if circle %}{% url 'circles:detail' circle.pk %}{% else %}{% url 'circles:list' %}{% endif %}">Cancel</a></div>
+</form>
+{% endblock %}

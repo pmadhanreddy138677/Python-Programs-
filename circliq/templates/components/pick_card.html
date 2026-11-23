@@ -1,0 +1,5 @@
+<a href="{{ p.url }}" class="card card-hover glow pick p-4">
+  <div class="flex items-center gap-3">{% if p.person %}{% include "components/avatar.html" with u=p.person size="h-10 w-10" %}{% else %}<span class="icon-tile {{ p.tile }} !h-10 !w-10 !rounded-xl">{% include "components/icon.html" with name=p.icon %}</span>{% endif %}
+    <span class="badge">{{ p.kind }}</span></div>
+  <p class="line-clamp-2 font-semibold leading-snug">{{ p.title }}</p>
+  <p class="line-clamp-2 text-xs muted">{% if p.reason %}✦ {{ p.reason }}{% endif %}</p></a>

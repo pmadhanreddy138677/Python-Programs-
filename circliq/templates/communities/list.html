@@ -1,0 +1,30 @@
+{% extends "app_base.html" %}
+{% block title %}Communities · circliq{% endblock %}
+{% block content %}
+<section class="banner flex flex-wrap items-center justify-between gap-4 p-6 sm:p-8">
+  <div class="relative z-10"><h1 class="text-3xl font-extrabold tracking-tight">Find Your Community</h1><p class="mt-1 text-white/85">Explore communities built around what you love.</p></div>
+  <a href="{% url 'communities:create' %}" class="btn relative z-10 !bg-white !text-indigo-700">{% include "components/icon.html" with name="plus" %}Create community</a>
+</section>
+
+<form method="get" class="mt-5 flex flex-wrap gap-2">
+  <input type="hidden" name="category" value="{{ cat }}">
+  <div class="relative min-w-[220px] flex-1"><input name="q" aria-label="Search" value="{{ q }}" class="input" placeholder="Search communities…"></div>
+  <select name="scope" class="input !w-auto" data-autosubmit aria-label="Show"><option value="">All communities</option><option value="mine" {% if scope == 'mine' %}selected{% endif %}>Joined by me</option></select>
+  <button class="btn btn-secondary">Search</button>
+</form>
+<div class="-mx-1 mt-4 flex gap-2 overflow-x-auto px-1 pb-1">
+  <a class="tab whitespace-nowrap {% if not cat %}active{% endif %}" href="?scope={{ scope }}">All</a>
+  {% for key, label in categories %}<a class="tab whitespace-nowrap {% if cat == key %}active{% endif %}" href="?category={{ key }}&scope={{ scope }}">{{ label }}</a>{% endfor %}
+</div>
+
+<div class="mt-5 grid gap-4 sm:grid-cols-2 2xl:grid-cols-3">
+  {% for c in page %}<div class="reveal in">{% include "components/community_card.html" %}</div>
+  {% empty %}<div class="card col-span-full p-10 text-center"><p class="text-lg font-semibold">No communities found</p><p class="mt-1 text-sm muted">Try another category, or start the community you wish existed.</p><a href="{% url 'communities:create' %}" class="btn btn-primary mt-4">Create one</a></div>{% endfor %}
+</div>
+{% if page.paginator.num_pages > 1 %}
+<nav class="mt-6 flex items-center justify-center gap-2" aria-label="Pages">
+  {% if page.has_previous %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.previous_page_number }}">← Previous</a>{% endif %}
+  <span class="text-sm muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary" href="?{{ querystring }}&page={{ page.next_page_number }}">Next →</a>{% endif %}
+</nav>{% endif %}
+{% endblock %}

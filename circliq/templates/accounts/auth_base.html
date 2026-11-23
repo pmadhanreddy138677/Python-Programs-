@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="grid min-h-screen lg:grid-cols-2">
+  <aside class="auth-panel hidden flex-col justify-between p-12 lg:flex">
+    <a href="{% url 'landing' %}" class="inline-flex items-center gap-2 text-xl font-bold"><img src="{% load static %}{% static 'images/logo-icon.svg' %}" class="h-8 w-8" alt="">circliq</a>
+    <div>
+      <svg viewBox="0 0 300 160" class="mb-8 w-72 opacity-90" fill="none" aria-hidden="true"><g stroke="#fff" stroke-opacity=".5" stroke-width="2"><path d="M60 50 170 30M60 50 90 120M170 30 230 110M90 120 230 110"/></g><circle cx="60" cy="50" r="26" fill="#fff" fill-opacity=".9"/><circle cx="170" cy="30" r="18" fill="#06B6D4"/><circle cx="90" cy="120" r="20" fill="#fff" fill-opacity=".6"/><circle cx="230" cy="110" r="24" fill="#fff" fill-opacity=".8"/></svg>
+      <h1 class="text-4xl font-extrabold leading-tight">Your Campus Community Starts Here.</h1>
+      <p class="mt-4 max-w-md text-white/80">Connect with students, discover communities, and build meaningful collaborations.</p>
+    </div>
+    <p class="text-sm text-white/60">Student project · not an official university service</p>
+  </aside>
+  <main id="main" tabindex="-1" class="flex items-center justify-center p-6">
+    <div class="w-full max-w-md">
+      <div class="mb-6 flex items-center justify-between"><a href="{% url 'landing' %}" class="lg:invisible">{% include "components/logo.html" %}</a>{% include "components/theme_toggle.html" %}</div>
+      {% block form_area %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

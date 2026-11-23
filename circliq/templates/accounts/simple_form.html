@@ -1,0 +1,18 @@
+{% extends "accounts/auth_base.html" %}
+{% block title %}{{ title }} · circliq{% endblock %}
+{% block form_area %}
+<h2 class="text-3xl font-bold">{{ title }}</h2>
+{% if subtitle %}<p class="mt-1 muted">{{ subtitle }}</p>{% endif %}
+{% if validlink == False %}
+  <p class="mt-4 field-error">This link is invalid or has expired.</p>
+  <a class="btn btn-secondary mt-4" href="{% url 'accounts:password_reset' %}">Request a new link</a>
+{% else %}
+<form method="post" class="mt-6 space-y-4" novalidate>
+  {% csrf_token %}
+  {% for e in form.non_field_errors %}<p class="field-error">{{ e }}</p>{% endfor %}
+  {% for field in form %}{% include "components/field.html" with field=field %}{% endfor %}
+  <button class="btn btn-primary w-full !py-3">{{ button }}</button>
+</form>
+{% endif %}
+<p class="mt-4 text-sm muted"><a class="font-semibold" style="color:var(--primary)" href="{% if in_app %}{% url 'dashboard:home' %}{% else %}{% url 'accounts:login' %}{% endif %}">Back</a></p>
+{% endblock %}
